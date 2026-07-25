@@ -32,6 +32,8 @@ const STORAGE_DEVICE_TEXTURE: Texture2D = preload(
 @onready var document_title_label: Label = %DocumentTitleLabel
 @onready var document_texture: TextureRect = %DocumentTexture
 @onready var document_close_button: Button = %DocumentCloseButton
+@onready var volume_slider: HSlider = %VolumeSlider
+@onready var mute_button: Button = %MuteButton
 @onready var force_overwrite_button: Button = %ForceOverwriteButton
 @onready var overwrite_overlay: Control = %OverwriteOverlay
 @onready var overwrite_progress: ProgressBar = %OverwriteProgress
@@ -81,6 +83,7 @@ const STORAGE_DEVICE_TEXTURE: Texture2D = preload(
 @onready var save_will_manager: Node = %SaveWillManager
 @onready var ending_manager: Node = %EndingManager
 @onready var ai_client: Node = %AIClient
+@onready var audio_controller: Node = %AudioController
 @onready var save_data: Node = get_node("/root/SaveData")
 @onready var investigation_areas: Array[Button] = [
 	%PhoneArea,
@@ -102,6 +105,8 @@ func _ready() -> void:
 	load_button.pressed.connect(_on_load_pressed)
 	delete_recording_button.pressed.connect(_on_delete_recording_pressed)
 	document_close_button.pressed.connect(_on_document_close_pressed)
+	volume_slider.value_changed.connect(_on_volume_changed)
+	mute_button.pressed.connect(_on_mute_pressed)
 	force_overwrite_button.pressed.connect(_on_force_overwrite_pressed)
 	overwrite_continue_button.pressed.connect(_on_overwrite_continue_pressed)
 	delete_audio_choice_button.pressed.connect(
@@ -152,6 +157,8 @@ func _ready() -> void:
 			first_loop_content_manager.call(&"get_crisis_text")
 		)
 	_refresh_residual_presentation()
+	if DisplayServer.get_name() != "headless":
+		audio_controller.call_deferred(&"play_intro")
 	print(
 		"T1.5 smoke: loop %d ready; persistence loaded"
 		% initial_loop_index
@@ -193,6 +200,7 @@ func _on_area_selected(
 	selection_label.text = String(action.get("display_name", region_id))
 	detail_label.text = String(action.get("description", ""))
 	_show_action_art(action_id)
+	audio_controller.call(&"play_action", action_id)
 	_update_delete_recording_action(action_id)
 	print("Action selected: %s" % action_id)
 
@@ -381,6 +389,7 @@ func _on_first_loop_choice(choice_id: StringName) -> void:
 		return
 
 	first_loop_decision_overlay.visible = false
+	audio_controller.call(&"play_choice", choice_id)
 	if loop_index == 2:
 		var second_result: Dictionary = second_loop_content_manager.call(
 			&"complete_choice",
@@ -636,6 +645,7 @@ func _on_ending_selected(ending_id: StringName) -> void:
 	save_status_label.text = save_status
 	ending_save_label.text = "%s · %s" % [save_name, save_status]
 	ending_overlay.visible = true
+	audio_controller.call(&"set_ending_state", ending_id)
 	save_data.call(&"save_persistent_state")
 
 
@@ -660,6 +670,7 @@ func _on_overwrite_progress_changed(value: float) -> void:
 
 
 func _on_overwrite_stage_changed(stage: int) -> void:
+	audio_controller.call(&"play_overwrite_stage", stage)
 	match stage:
 		1:
 			overwrite_stage_label.text = "FORCED OVERWRITE · READING"
@@ -737,3 +748,13 @@ func _show_document(title: String, texture: Texture2D) -> void:
 
 func _on_document_close_pressed() -> void:
 	document_overlay.visible = false
+
+
+func _on_volume_changed(value: float) -> void:
+	audio_controller.call(&"set_master_volume", value)
+
+
+func _on_mute_pressed() -> void:
+	var next_muted: bool = not bool(audio_controller.get("muted"))
+	audio_controller.call(&"set_muted", next_muted)
+	mute_button.text = "取消静音" if next_muted else "静音"

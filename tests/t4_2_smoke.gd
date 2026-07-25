@@ -35,7 +35,10 @@ func _init() -> void:
 	]:
 		assert(FileAccess.file_exists(path), "Missing T4.2 asset: %s" % path)
 
-	print("T4.2 smoke: formal office, document viewer, icons, and waveform ready")
-	main.queue_free()
+	main.get_node("%AudioController").call(&"stop_all")
 	await process_frame
+	main.free()
+	await process_frame
+	await process_frame
+	print("T4.2 smoke: formal office, document viewer, icons, and waveform ready")
 	quit()

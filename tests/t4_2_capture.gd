@@ -33,9 +33,10 @@ func _init() -> void:
 	await process_frame
 	_capture("document-panel-1366x768.png", Vector2i(1366, 768))
 
-	main.queue_free()
+	main.get_node("%AudioController").call(&"stop_all")
 	await process_frame
-	capture_viewport.queue_free()
+	main.free()
+	capture_viewport.free()
 	quit()
 
 
