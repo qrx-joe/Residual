@@ -12,7 +12,7 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "test": "vitest run tests/app.test.ts",
+    "test": "vitest run tests/app.test.ts tests/routerbase_adapter.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

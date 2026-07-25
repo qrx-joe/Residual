@@ -1,6 +1,7 @@
 import type {
   Decision,
   SaveDecisionRequest,
+  SaveDecisionResponse,
 } from "./contracts.js";
 
 const DIALOGUE_BY_DECISION: Record<Decision, string[]> = {
@@ -10,14 +11,19 @@ const DIALOGUE_BY_DECISION: Record<Decision, string[]> = {
   REFUSE: ["这次，我拒绝。"],
 };
 
-const REASON_BY_DECISION: Record<Decision, string> = {
+const REASON_BY_DECISION: Record<
+  Decision,
+  SaveDecisionResponse["reason_code"]
+> = {
   ALLOW: "DEFAULT_ALLOW",
   PRESERVE: "PROTECTED_MEMORY",
   DISTORT: "CONCEALMENT_DETECTED",
   REFUSE: "FORCED_OVERWRITE",
 };
 
-export function createLocalFallback(request: SaveDecisionRequest) {
+export function createLocalFallback(
+  request: SaveDecisionRequest,
+): SaveDecisionResponse {
   const decision = request.allowed_decisions[0];
   const target = request.allowed_targets[0];
   if (decision === undefined || target === undefined) {

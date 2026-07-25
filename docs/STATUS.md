@@ -9,7 +9,7 @@
 
 ## 当前阶段
 
-`MILESTONE_3_T3_1_COMPLETE`
+`MILESTONE_3_T3_2_COMPLETE`
 
 ## 已完成
 
@@ -37,10 +37,11 @@
 - [x] T2.4 第三轮谈判
 - [x] T2.5 最终证据和结局
 - [x] T3.1 后端骨架
+- [x] T3.2 RouterBase 适配器
 
 ## 下一步
 
-- [ ] T3.2 RouterBase 适配器
+- [ ] T3.3 Godot AIClient
 
 ## 当前风险
 

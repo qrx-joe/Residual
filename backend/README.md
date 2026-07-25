@@ -16,5 +16,14 @@ npm run dev
 - `GET /health`
 - `POST /v1/save-decision`
 
-T3.1 只返回确定性的本地 fallback。RouterBase 网络适配器将在 T3.2
-接入，服务在无 Token 或断网时仍必须可用。
+配置 `ROUTERBASE_API_KEY` 后，服务通过 RouterBase 的 OpenAI 兼容
+`/v1/chat/completions` 接口请求结构化决策。模型、基础 URL 和 5 秒
+总超时预算均可通过 `.env` 配置。
+
+没有 Token、断网、超时、HTTP 错误、非法 JSON 或白名单越权时，服务
+立即使用确定性的本地 fallback，游戏主线不依赖网络。
+
+官方接口资料：
+
+- <https://docs.routerbase.com/api-reference/chat-completions>
+- <https://docs.routerbase.com/essentials/errors>

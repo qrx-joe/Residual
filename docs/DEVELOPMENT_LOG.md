@@ -601,3 +601,56 @@
 - Fastify 请求体限制为 32 KiB，生产日志对认证头和 Cookie 做脱敏
 - `.env.example` 只包含空的 `ROUTERBASE_API_KEY` 占位符，真实 `.env` 继续被忽略
 - 本地 fallback 只从请求提供的决策和目标白名单中取值，核心流程仍可离线运行
+
+## 2026-07-25 17:10 - T3.2
+
+### Question
+
+如何在不让 RouterBase 越权、不泄漏凭据、并保证 5 秒内回到本地 fallback 的前提下接入模型适配器？
+
+### To do
+
+- 核对 RouterBase 当前官方端点、认证和 JSON 模式
+- 实现 OpenAI 兼容 Chat Completions 请求
+- 实现总计 5 秒超时预算和最多一次重试
+- 校验模型响应 Schema、本次决策白名单和文本预算
+- 任何错误或越权结果进入本地 fallback
+- 无 Token 时保持完整离线响应
+
+### Next to do
+
+- T3.3：实现 Godot AIClient、返回值二次校验和 UI 非阻断 fallback
+
+### Changes
+
+- 创建 `backend/src/routerbase_adapter.ts`
+- 创建 `backend/src/response_validator.ts`
+- 创建 `backend/src/decision_service.ts`
+- 扩展 `backend/src/contracts.ts`，增加完整响应契约
+- 扩展 `backend/src/app.ts`，支持可选决策服务
+- 扩展 `backend/src/config.ts` 与 `.env.example`
+- 更新 `backend/src/server.ts`，仅在存在 Token 时实例化适配器
+- 创建 `backend/tests/routerbase_adapter.test.ts`
+- 扩展 `backend/tests/app.test.ts`
+- 更新 `backend/README.md`
+
+### Verification
+
+- RouterBase 官方文档确认端点为 `/v1/chat/completions`
+- 官方文档确认 Bearer 认证与 `response_format: json_object`
+- 官方错误分类确认 429、455 和 5xx 可重试
+- `npm test`：2 个测试文件、13 个用例全部通过
+- `npm run typecheck`：严格类型检查通过
+- `npm run build`：生产构建通过
+- 成功响应、455 后重试成功、401 不重试均通过 mock 验证
+- 非法 JSON、越权 decision、越权 mutation、超长台词均进入 fallback
+- 超时测试证明所有尝试共享单一总预算
+- 无 Token 真实 HTTP 运行时 `ai_available: false` 且本地决策可用
+- 验收后服务进程已关闭，端口不再监听
+
+### Advice
+
+- 默认模型采用官方示例中的 `google/gemini-2.5-flash`，但可通过环境变量替换
+- 本节点没有真实 Token，因此只确认协议实现和 mock 行为；真实模型 JSON 稳定性仍待凭据实测
+- 适配器从不把 API Key 写入响应、错误消息或业务日志
+- 5 秒是整个调用的总预算，不是每次重试各 5 秒

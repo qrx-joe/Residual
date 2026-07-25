@@ -6,6 +6,21 @@ const ServerConfigSchema = z.object({
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
+  ROUTERBASE_API_KEY: z.string().trim().default(""),
+  ROUTERBASE_MODEL: z
+    .string()
+    .trim()
+    .min(1)
+    .default("google/gemini-2.5-flash"),
+  ROUTERBASE_BASE_URL: z
+    .url()
+    .default("https://routerbase.com/v1"),
+  ROUTERBASE_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(100)
+    .max(5_000)
+    .default(5_000),
 });
 
 export function loadServerConfig(environment: NodeJS.ProcessEnv) {

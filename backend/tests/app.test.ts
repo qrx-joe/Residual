@@ -99,4 +99,38 @@ describe("backend skeleton", () => {
     expect(response.statusCode).toBe(400);
     expect(response.json().error).toBe("INVALID_REQUEST");
   });
+
+  it("reports AI available only when an adapter is configured", async () => {
+    const server = buildServer(
+      { logger: false },
+      {
+        decide: async () => ({
+          decision: "PRESERVE",
+          reason_code: "PROTECTED_MEMORY",
+          target: "azhi_audio",
+          mutations: [],
+          dialogue: ["录音留下。"],
+          persona_delta: {
+            trust: 0,
+            obsession: 0,
+            conflict: 0,
+          },
+        }),
+      },
+    );
+    servers.push(server);
+
+    const healthResponse = await server.inject({
+      method: "GET",
+      url: "/health",
+    });
+    const decisionResponse = await server.inject({
+      method: "POST",
+      url: "/v1/save-decision",
+      payload: validRequest,
+    });
+
+    expect(healthResponse.json().ai_available).toBe(true);
+    expect(decisionResponse.json().decision).toBe("PRESERVE");
+  });
 });

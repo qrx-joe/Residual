@@ -25,6 +25,19 @@ export const MutationSchema = z.enum([
   "delay_load_progress",
 ]);
 
+export const ReasonCodeSchema = z.enum([
+  "FIRST_DELETE",
+  "REPEATED_DELETE",
+  "BROKEN_PROMISE",
+  "KEPT_PROMISE",
+  "CONFESSION_ACCEPTED",
+  "BARGAIN_ACCEPTED",
+  "CONCEALMENT_DETECTED",
+  "FORCED_OVERWRITE",
+  "PROTECTED_MEMORY",
+  "DEFAULT_ALLOW",
+]);
+
 export const SaveDecisionRequestSchema = z
   .object({
     session_id: z.string().trim().min(1).max(64),
@@ -51,3 +64,24 @@ export type SaveDecisionRequest = z.infer<
   typeof SaveDecisionRequestSchema
 >;
 export type Decision = z.infer<typeof DecisionSchema>;
+
+export const SaveDecisionResponseSchema = z
+  .object({
+    decision: DecisionSchema,
+    reason_code: ReasonCodeSchema,
+    target: TargetSchema,
+    mutations: z.array(MutationSchema).max(7),
+    dialogue: z.array(z.string()).min(1).max(2),
+    persona_delta: z
+      .object({
+        trust: z.number().int().min(-2).max(2),
+        obsession: z.number().int().min(-2).max(2),
+        conflict: z.number().int().min(-2).max(2),
+      })
+      .strict(),
+  })
+  .strict();
+
+export type SaveDecisionResponse = z.infer<
+  typeof SaveDecisionResponseSchema
+>;
