@@ -31,6 +31,8 @@ RouterBase 反应默认关闭，断网时完整闭环仍然可通关。
 - Windows PCK 配对包成功启动
 - 打包后实机完成三项调查、播放录音，并进入第一轮删除/保留关键选择
 - 既有 GUI 证据包含最终揭示、公开真相结局和保留记忆结局
+- 打包实机截图：`docs/evidence/SUBMISSION/windows-build-main.jpg`
+- 关键选择截图：`docs/evidence/SUBMISSION/windows-build-first-choice.jpg`
 
 ## 构建取舍
 
