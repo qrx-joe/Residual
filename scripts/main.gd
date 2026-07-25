@@ -375,6 +375,9 @@ func _on_first_loop_choice(choice_id: StringName) -> void:
 	var action: Dictionary = action_manager.call(&"get_action", choice_id)
 	var cost: int = int(action.get("cost", 0)) if loop_index == 1 else 0
 	if cost > 0 and not bool(loop_manager.call(&"request_action", choice_id)):
+		detail_label.text = "行动次数已用尽。仍可选择保留录音并读取存档。"
+		delete_audio_choice_button.disabled = false
+		keep_audio_choice_button.disabled = false
 		return
 	var action_result: Dictionary = action_manager.call(
 		&"execute_action",
