@@ -447,3 +447,55 @@
 - 第二轮固定因果仍完全由本地规则决定，不交给 AI
 - T2.3 只实现谈判入口，四种谈判行为留给 T2.4
 - 两个 GUI 隔离存档已删除，默认正式存档未触碰
+
+## 2026-07-25 15:42 - T2.4
+
+### Question
+
+如何让坦白、交换、隐瞒和强制覆盖都产生明确、持久、无死路的规则变化？
+
+### To do
+
+- 实现四种本地谈判决策
+- 坦白记录承诺与信任
+- 交换记录残留项与执念
+- 隐瞒修改人格并生成非核心日志变体
+- 强制覆盖接入固定 99% 高光
+- 四条路径均开放读档进入第三轮
+
+### Next to do
+
+- T2.5：组合声纹、芯片和证据包，实现最终揭示、两个结局和关系微变体
+
+### Changes
+
+- 创建 `scripts/managers/save_will_manager.gd`
+- 更新 `scripts/managers/second_loop_content_manager.gd`，补充跨进程第二轮世界初始化
+- 更新 `scripts/main.gd`，接入谈判四选项、结果和第三轮读档
+- 更新 `scenes/main.tscn`，增加谈判四选项覆盖层
+- 创建 `tests/t2_4_smoke.gd`
+- 扩展 `tests/t2_3_smoke.gd`，验证第二轮重启初始化
+
+### Verification
+
+- T2.4 smoke：四种选项均可执行且第二次选择被拒绝
+- T2.4 smoke：坦白 `trust +1` 并记录保留阿栀录音承诺
+- T2.4 smoke：交换 `obsession +1` 并保留三个残留项
+- T2.4 smoke：隐瞒 `trust -2 / conflict +1` 并生成“未发生的操作”
+- T2.4 smoke：强制覆盖在幽灵存档生成前不可继续，生成后可继续
+- T2.3 smoke：跨进程恢复第二轮时重新初始化录音等世界字段
+- T1.1–T2.3 全回归通过
+- Godot GUI：四选项同时可见
+- Godot GUI：坦白后显示“承诺已记录”，可读档进入第三轮
+- Godot GUI：正式强制覆盖完成后按钮变为“保存决定并读档”，可进入第三轮
+- 截图：
+  - `docs/evidence/T2.4/four-negotiation-options.jpg`
+  - `docs/evidence/T2.4/confess-promise-recorded.jpg`
+  - `docs/evidence/T2.4/force-overwrite-to-reload.jpg`
+
+### Advice
+
+- 四种谈判效果完全由本地 `SaveWillManager` 决定，RouterBase 不得改写
+- 承诺保存在 `persona_state.promises`，谈判选择保存在 `player_knowledge`
+- 实机验收暴露并修复了仅同进程读档无法发现的第二轮重启初始化缺口
+- 两个 GUI 隔离种子存档已删除，默认正式存档未触碰

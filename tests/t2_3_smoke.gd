@@ -29,7 +29,11 @@ func _run() -> void:
 		return
 
 	game_state.set("loop_index", 2)
+	second_loop_manager.call(&"initialize_loop", 2)
 	var world_state: Dictionary = game_state.get("world_state")
+	if not bool(world_state.get(&"audio_exists", false)):
+		_fail("Second-loop restart did not initialize the audio state")
+		return
 	world_state[&"audio_played"] = true
 	world_state[&"evidence_found"] = true
 	world_state[&"first_loop_choice"] = "DELETE"
@@ -66,6 +70,7 @@ func _run() -> void:
 		return
 
 	game_state.set("loop_index", 2)
+	second_loop_manager.call(&"initialize_loop", 2)
 	world_state = game_state.get("world_state")
 	world_state[&"audio_played"] = true
 	world_state[&"evidence_found"] = true

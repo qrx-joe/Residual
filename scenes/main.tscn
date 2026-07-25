@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/managers/action_manager.gd" id="6_action"]
 [ext_resource type="Script" path="res://scripts/managers/first_loop_content_manager.gd" id="7_first_loop"]
 [ext_resource type="Script" path="res://scripts/managers/second_loop_content_manager.gd" id="8_second_loop"]
+[ext_resource type="Script" path="res://scripts/managers/save_will_manager.gd" id="9_save_will"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
 bg_color = Color(0.105, 0.133, 0.192, 0.96)
@@ -113,6 +114,10 @@ script = ExtResource("7_first_loop")
 [node name="SecondLoopContentManager" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("8_second_loop")
+
+[node name="SaveWillManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("9_save_will")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -623,3 +628,91 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "进入谈判"
+
+[node name="NegotiationOptionsOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.025, 0.035, 0.055, 0.96)
+
+[node name="OptionsCenter" type="CenterContainer" parent="NegotiationOptionsOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OptionsPanel" type="PanelContainer" parent="NegotiationOptionsOverlay/OptionsCenter"]
+custom_minimum_size = Vector2(760, 390)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="OptionsMargin" type="MarginContainer" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 26
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 26
+
+[node name="OptionsLayout" type="VBoxContainer" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="OptionsTitle" type="Label" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 22
+text = "SAVE_03：你回来是为了救她，还是证明你没有错？"
+horizontal_alignment = 1
+
+[node name="NegotiationChoiceGrid" type="GridContainer" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout"]
+layout_mode = 2
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="ConfessButton" type="Button" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout/NegotiationChoiceGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 58)
+layout_mode = 2
+text = "坦白\n我不会再删除她"
+
+[node name="BargainButton" type="Button" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout/NegotiationChoiceGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 58)
+layout_mode = 2
+text = "交换\n允许 SAVE_03 留下残留项"
+
+[node name="ConcealButton" type="Button" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout/NegotiationChoiceGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 58)
+layout_mode = 2
+text = "隐瞒\n删除我的操作记录"
+
+[node name="ForceButton" type="Button" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout/NegotiationChoiceGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 58)
+layout_mode = 2
+text = "强制覆盖\n忽略 SAVE_03 的拒绝"
+
+[node name="NegotiationResultLabel" type="Label" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 66)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+
+[node name="ContinueAfterNegotiationButton" type="Button" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+text = "保存决定并读档"

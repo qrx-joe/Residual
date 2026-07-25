@@ -1,6 +1,19 @@
 extends Node
 
 
+func initialize_loop(loop_index: int) -> void:
+	if loop_index != 2:
+		return
+	var world_state: Dictionary = _get_world_state()
+	world_state[&"audio_exists"] = true
+	world_state[&"soundprint_available"] = true
+	world_state[&"evidence_extracted"] = false
+	world_state[&"first_loop_choice"] = ""
+	world_state[&"completed_actions"] = {}
+	world_state[&"negotiation_available"] = false
+	world_state[&"negotiation_entered"] = false
+
+
 func should_offer_choice(loop_index: int) -> bool:
 	if loop_index != 2:
 		return false

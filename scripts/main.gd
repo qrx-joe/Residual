@@ -28,12 +28,22 @@ extends Control
 @onready var negotiation_title_label: Label = %NegotiationTitleLabel
 @onready var negotiation_detail_label: Label = %NegotiationDetailLabel
 @onready var enter_negotiation_button: Button = %EnterNegotiationButton
+@onready var negotiation_options_overlay: Control = %NegotiationOptionsOverlay
+@onready var confess_button: Button = %ConfessButton
+@onready var bargain_button: Button = %BargainButton
+@onready var conceal_button: Button = %ConcealButton
+@onready var negotiation_force_button: Button = %ForceButton
+@onready var negotiation_result_label: Label = %NegotiationResultLabel
+@onready var continue_after_negotiation_button: Button = (
+	%ContinueAfterNegotiationButton
+)
 @onready var loop_manager: Node = %LoopManager
 @onready var residual_data_manager: Node = %ResidualDataManager
 @onready var anomaly_controller: Node = %AnomalyController
 @onready var action_manager: Node = %ActionManager
 @onready var first_loop_content_manager: Node = %FirstLoopContentManager
 @onready var second_loop_content_manager: Node = %SecondLoopContentManager
+@onready var save_will_manager: Node = %SaveWillManager
 @onready var save_data: Node = get_node("/root/SaveData")
 @onready var investigation_areas: Array[Button] = [
 	%PhoneArea,
@@ -43,6 +53,7 @@ extends Control
 
 var selection_count: int = 0
 var pending_first_loop_failure: Dictionary = {}
+var pending_negotiation_result: Dictionary = {}
 
 
 func _ready() -> void:
@@ -62,6 +73,21 @@ func _ready() -> void:
 		_on_first_loop_choice.bind(&"KEEP_AUDIO")
 	)
 	enter_negotiation_button.pressed.connect(_on_enter_negotiation_pressed)
+	confess_button.pressed.connect(
+		_on_negotiation_choice.bind(&"CONFESS")
+	)
+	bargain_button.pressed.connect(
+		_on_negotiation_choice.bind(&"BARGAIN")
+	)
+	conceal_button.pressed.connect(
+		_on_negotiation_choice.bind(&"CONCEAL")
+	)
+	negotiation_force_button.pressed.connect(
+		_on_negotiation_choice.bind(&"FORCE")
+	)
+	continue_after_negotiation_button.pressed.connect(
+		_on_continue_after_negotiation
+	)
 	anomaly_controller.connect(&"progress_changed", _on_overwrite_progress_changed)
 	anomaly_controller.connect(&"stage_changed", _on_overwrite_stage_changed)
 	anomaly_controller.connect(&"overwrite_completed", _on_overwrite_completed)
@@ -70,6 +96,7 @@ func _ready() -> void:
 	var initial_loop_index: int = maxi(int(game_state.get("loop_index")), 1)
 	loop_manager.call(&"start_loop", initial_loop_index)
 	first_loop_content_manager.call(&"initialize_loop", initial_loop_index)
+	second_loop_content_manager.call(&"initialize_loop", initial_loop_index)
 	residual_data_manager.call(&"prepare_loop", initial_loop_index)
 	save_data.call(&"create_world_snapshot")
 	crisis_label.visible = initial_loop_index == 1
@@ -149,13 +176,26 @@ func _on_loop_state_changed(
 
 func _on_loop_timed_out() -> void:
 	loop_status_label.text = "DATA PURGE STARTED"
-	if pending_first_loop_failure.is_empty():
+	if (
+		pending_negotiation_result.is_empty()
+		and pending_first_loop_failure.is_empty()
+	):
 		var game_state: Node = get_node("/root/GameState")
 		if int(game_state.get("loop_index")) == 1:
 			pending_first_loop_failure = (
 				first_loop_content_manager.call(&"get_timeout_failure")
 			)
-	if not pending_first_loop_failure.is_empty():
+	if not pending_negotiation_result.is_empty():
+		selection_label.text = String(
+			pending_negotiation_result.get("title", "谈判已完成")
+		)
+		detail_label.text = String(
+			pending_negotiation_result.get(
+				"detail",
+				"决定已保存。读取 SAVE_01 进入下一轮。"
+			)
+		)
+	elif not pending_first_loop_failure.is_empty():
 		selection_label.text = String(
 			pending_first_loop_failure.get("title", "03:00 · 调查结束")
 		)
@@ -190,6 +230,7 @@ func _on_load_pressed() -> void:
 	var next_loop_index: int = int(game_state.get("loop_index")) + 1
 	loop_manager.call(&"start_loop", next_loop_index)
 	first_loop_content_manager.call(&"initialize_loop", next_loop_index)
+	second_loop_content_manager.call(&"initialize_loop", next_loop_index)
 	residual_data_manager.call(&"prepare_loop", next_loop_index)
 	for area: Button in investigation_areas:
 		area.disabled = false
@@ -199,7 +240,9 @@ func _on_load_pressed() -> void:
 	delete_recording_button.visible = false
 	first_loop_decision_overlay.visible = false
 	negotiation_entry_overlay.visible = false
+	negotiation_options_overlay.visible = false
 	pending_first_loop_failure.clear()
+	pending_negotiation_result.clear()
 	crisis_label.visible = false
 	_refresh_residual_presentation()
 	save_data.call(&"save_persistent_state")
@@ -323,10 +366,80 @@ func _on_enter_negotiation_pressed() -> void:
 	if not bool(second_loop_content_manager.call(&"enter_negotiation")):
 		return
 	negotiation_entry_overlay.visible = false
-	selection_label.text = "谈判通道已建立"
-	detail_label.text = "SAVE_03 正在等待你的选择。"
+	negotiation_options_overlay.visible = true
+	negotiation_result_label.visible = false
+	continue_after_negotiation_button.visible = false
+	for button: Button in _get_negotiation_buttons():
+		button.disabled = false
 	loop_status_label.text = "SAVE NEGOTIATION"
+
+
+func _on_negotiation_choice(decision_id: StringName) -> void:
+	var result: Dictionary = save_will_manager.call(
+		&"resolve_decision",
+		decision_id
+	)
+	if not bool(result.get("ok", false)):
+		negotiation_result_label.text = String(
+			result.get("error", "NEGOTIATION_ERROR")
+		)
+		negotiation_result_label.visible = true
+		return
+	for button: Button in _get_negotiation_buttons():
+		button.disabled = true
 	save_data.call(&"save_persistent_state")
+
+	if bool(result.get("trigger_force_overwrite", false)):
+		negotiation_options_overlay.visible = false
+		var started: bool = bool(
+			anomaly_controller.call(&"request_force_overwrite")
+		)
+		if started:
+			_set_interaction_enabled(false)
+			overwrite_overlay.visible = true
+			overwrite_progress.value = 0.0
+			overwrite_stage_label.text = "FORCED OVERWRITE · READING"
+			save_03_line_label.text = ""
+			overwrite_continue_button.visible = false
+			return
+		if bool(anomaly_controller.call(&"has_completed_overwrite")):
+			pending_negotiation_result = result
+			_on_continue_after_negotiation()
+		return
+
+	negotiation_result_label.text = "%s\n%s" % [
+		String(result.get("title", "")),
+		String(result.get("detail", "")),
+	]
+	negotiation_result_label.visible = true
+	continue_after_negotiation_button.visible = true
+	pending_negotiation_result = result
+
+
+func _on_continue_after_negotiation() -> void:
+	if not bool(save_will_manager.call(&"can_continue_after_negotiation")):
+		return
+	negotiation_options_overlay.visible = false
+	if not bool(loop_manager.get("timed_out")):
+		loop_manager.call(&"end_loop_early", &"NEGOTIATION_COMPLETE")
+	selection_label.text = String(
+		pending_negotiation_result.get("title", "谈判已完成")
+	)
+	detail_label.text = (
+		String(pending_negotiation_result.get("detail", ""))
+		+ "\n决定已保存。读取 SAVE_01 进入下一轮。"
+	)
+	load_button.disabled = false
+	save_data.call(&"save_persistent_state")
+
+
+func _get_negotiation_buttons() -> Array[Button]:
+	return [
+		confess_button,
+		bargain_button,
+		conceal_button,
+		negotiation_force_button,
+	]
 
 
 func _refresh_residual_presentation() -> void:
@@ -387,6 +500,11 @@ func _on_overwrite_stage_changed(stage: int) -> void:
 func _on_overwrite_completed() -> void:
 	save_03_line_label.text = "SAVE_03：你可以回去。\n她留下。"
 	overwrite_continue_button.visible = true
+	var player_knowledge: Dictionary = (
+		get_node("/root/GameState").get("player_knowledge")
+	)
+	if String(player_knowledge.get(&"negotiation_choice", "")) == "FORCE":
+		overwrite_continue_button.text = "保存决定并读档"
 	ghost_save_slot.visible = true
 	force_overwrite_button.visible = false
 	save_data.call(&"save_persistent_state")
@@ -394,6 +512,16 @@ func _on_overwrite_completed() -> void:
 
 func _on_overwrite_continue_pressed() -> void:
 	overwrite_overlay.visible = false
+	var player_knowledge: Dictionary = (
+		get_node("/root/GameState").get("player_knowledge")
+	)
+	if String(player_knowledge.get(&"negotiation_choice", "")) == "FORCE":
+		pending_negotiation_result = {
+			"title": "强制覆盖完成",
+			"detail": "你可以回去。她留下。",
+		}
+		_on_continue_after_negotiation()
+		return
 	_set_interaction_enabled(true)
 	_refresh_residual_presentation()
 
