@@ -508,11 +508,35 @@ func _on_negotiation_choice(decision_id: StringName) -> void:
 		decision_id
 	)
 	if not bool(result.get("ok", false)):
-		negotiation_result_label.text = String(
-			result.get("error", "NEGOTIATION_ERROR")
-		)
+		var error_msg: String = String(result.get("error", "NEGOTIATION_ERROR"))
+		negotiation_result_label.text = error_msg
 		negotiation_result_label.visible = true
+
+		# 禁用所有谈判按钮
+		for button: Button in _get_negotiation_buttons():
+			button.disabled = true
+
+		# 如果是谈判已解决，提供继续选项
+		if error_msg == "NEGOTIATION_ALREADY_RESOLVED":
+			# 显示继续按钮让玩家退出谈判界面
+			continue_after_negotiation_button.visible = true
+			continue_after_negotiation_button.text = "继续游戏"
+			# 获取之前的谈判结果显示给玩家
+			var game_state: Node = get_node("/root/GameState")
+			var player_knowledge: Dictionary = game_state.get("player_knowledge")
+			var previous_choice: String = String(player_knowledge.get(&"negotiation_choice", ""))
+			if not previous_choice.is_empty():
+				match previous_choice:
+					"CONFESS":
+						negotiation_result_label.text = "承诺已记录\n那就记住你说过什么。\n下一轮，不要再删掉她。"
+					"BARGAIN":
+						negotiation_result_label.text = "交换成立\n你可以回去。\n它留下。"
+					"CONCEAL":
+						negotiation_result_label.text = "操作记录已隐藏\nSAVE_03 没有回应。"
+					"FORCE":
+						negotiation_result_label.text = "强制覆盖\n覆盖请求已发送。"
 		return
+
 	for button: Button in _get_negotiation_buttons():
 		button.disabled = true
 	save_data.call(&"save_persistent_state")
