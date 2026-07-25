@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/managers/residual_data_manager.gd" id="4_residual"]
 [ext_resource type="Script" path="res://scripts/managers/anomaly_controller.gd" id="5_anomaly"]
 [ext_resource type="Script" path="res://scripts/managers/action_manager.gd" id="6_action"]
+[ext_resource type="Script" path="res://scripts/managers/first_loop_content_manager.gd" id="7_first_loop"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
 bg_color = Color(0.105, 0.133, 0.192, 0.96)
@@ -103,6 +104,10 @@ script = ExtResource("5_anomaly")
 [node name="ActionManager" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("6_action")
+
+[node name="FirstLoopContentManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("7_first_loop")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -218,6 +223,13 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.64, 0.7, 1)
 theme_override_font_sizes/font_size = 14
 text = "点击区域查看名称。当前为玩法占位，不代表正式美术。"
+
+[node name="CrisisLabel" type="Label" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin/OfficeWorld"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.36, 0.36, 1)
+theme_override_font_sizes/font_size = 14
+text = "03:00 远程清除将覆盖办公室终端。找到阿栀留下的证据。"
 
 [node name="InvestigationGrid" type="GridContainer" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin/OfficeWorld"]
 layout_mode = 2
@@ -474,3 +486,69 @@ visible = false
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 text = "继续调查"
+
+[node name="FirstLoopDecisionOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.025, 0.035, 0.055, 0.94)
+
+[node name="DecisionCenter" type="CenterContainer" parent="FirstLoopDecisionOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DecisionPanel" type="PanelContainer" parent="FirstLoopDecisionOverlay/DecisionCenter"]
+custom_minimum_size = Vector2(700, 300)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="DecisionMargin" type="MarginContainer" parent="FirstLoopDecisionOverlay/DecisionCenter/DecisionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="DecisionLayout" type="VBoxContainer" parent="FirstLoopDecisionOverlay/DecisionCenter/DecisionPanel/DecisionMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DecisionTitle" type="Label" parent="FirstLoopDecisionOverlay/DecisionCenter/DecisionPanel/DecisionMargin/DecisionLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.36, 0.36, 1)
+theme_override_font_sizes/font_size = 22
+text = "空间冲突 · 此操作无法撤销"
+horizontal_alignment = 1
+
+[node name="DecisionDetail" type="Label" parent="FirstLoopDecisionOverlay/DecisionCenter/DecisionPanel/DecisionMargin/DecisionLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 16
+text = "EVIDENCE_03.enc 需要 2.4 GB，当前仅 0.6 GB。\n删除阿栀的语音缓存才能解压证据。"
+horizontal_alignment = 1
+
+[node name="DecisionButtons" type="HBoxContainer" parent="FirstLoopDecisionOverlay/DecisionCenter/DecisionPanel/DecisionMargin/DecisionLayout"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="DeleteAudioChoiceButton" type="Button" parent="FirstLoopDecisionOverlay/DecisionCenter/DecisionPanel/DecisionMargin/DecisionLayout/DecisionButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 52)
+layout_mode = 2
+text = "删除语音，解压证据"
+
+[node name="KeepAudioChoiceButton" type="Button" parent="FirstLoopDecisionOverlay/DecisionCenter/DecisionPanel/DecisionMargin/DecisionLayout/DecisionButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 52)
+layout_mode = 2
+text = "保留语音，退出"

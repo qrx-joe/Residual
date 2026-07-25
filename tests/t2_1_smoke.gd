@@ -16,23 +16,29 @@ func _run() -> void:
 	var action_manager: Node = ACTION_MANAGER_SCRIPT.new()
 	root.add_child(action_manager)
 
-	if (action_manager.get("actions_by_id") as Dictionary).size() != 3:
-		_fail("actions.json did not load all three actions")
+	if (action_manager.get("actions_by_id") as Dictionary).size() != 7:
+		_fail("actions.json did not load all seven actions")
 		return
-	var phone: Dictionary = action_manager.call(&"get_action", &"PHONE")
-	if String(phone.get("display_name", "")) != "电话与照片":
+	var phone: Dictionary = action_manager.call(
+		&"get_action",
+		&"INSPECT_PHOTO"
+	)
+	if String(phone.get("display_name", "")) != "检查合照":
 		_fail("UI presentation was not loaded from actions.json")
 		return
-	if not phone.get("tags", []).has("audio"):
+	if not phone.get("tags", []).has("photo"):
 		_fail("Action tags were not loaded")
 		return
 
-	var result: Dictionary = action_manager.call(&"execute_action", &"PHONE")
+	var result: Dictionary = action_manager.call(
+		&"execute_action",
+		&"INSPECT_PHOTO"
+	)
 	if not bool(result.get("ok", false)):
 		_fail("Valid action did not execute")
 		return
 	var world_state: Dictionary = game_state.get("world_state")
-	if world_state.get(&"last_investigated_region") != "PHONE":
+	if not bool(world_state.get(&"photo_inspected", false)):
 		_fail("Action effect was not applied through ActionManager")
 		return
 
@@ -59,8 +65,10 @@ func _run() -> void:
 	source_file.close()
 	(extra_payload["actions"] as Array).append({
 		"id": "TEST_ACTION",
+		"region": "TEST",
 		"display_name": "测试行动",
 		"description": "由 JSON 新增，不修改 UI 处理逻辑。",
+		"cost": 1,
 		"prerequisites": [],
 		"effects": [],
 		"tags": ["test"],

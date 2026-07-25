@@ -17,10 +17,15 @@ extends Control
 @onready var save_03_line_label: Label = %Save03LineLabel
 @onready var overwrite_continue_button: Button = %OverwriteContinueButton
 @onready var ghost_save_slot: VBoxContainer = %GhostSaveSlot
+@onready var crisis_label: Label = %CrisisLabel
+@onready var first_loop_decision_overlay: Control = %FirstLoopDecisionOverlay
+@onready var delete_audio_choice_button: Button = %DeleteAudioChoiceButton
+@onready var keep_audio_choice_button: Button = %KeepAudioChoiceButton
 @onready var loop_manager: Node = %LoopManager
 @onready var residual_data_manager: Node = %ResidualDataManager
 @onready var anomaly_controller: Node = %AnomalyController
 @onready var action_manager: Node = %ActionManager
+@onready var first_loop_content_manager: Node = %FirstLoopContentManager
 @onready var save_data: Node = get_node("/root/SaveData")
 @onready var investigation_areas: Array[Button] = [
 	%PhoneArea,
@@ -29,6 +34,7 @@ extends Control
 ]
 
 var selection_count: int = 0
+var pending_first_loop_failure: Dictionary = {}
 
 
 func _ready() -> void:
@@ -41,6 +47,12 @@ func _ready() -> void:
 	delete_recording_button.pressed.connect(_on_delete_recording_pressed)
 	force_overwrite_button.pressed.connect(_on_force_overwrite_pressed)
 	overwrite_continue_button.pressed.connect(_on_overwrite_continue_pressed)
+	delete_audio_choice_button.pressed.connect(
+		_on_first_loop_choice.bind(&"DELETE_AUDIO")
+	)
+	keep_audio_choice_button.pressed.connect(
+		_on_first_loop_choice.bind(&"KEEP_AUDIO")
+	)
 	anomaly_controller.connect(&"progress_changed", _on_overwrite_progress_changed)
 	anomaly_controller.connect(&"stage_changed", _on_overwrite_stage_changed)
 	anomaly_controller.connect(&"overwrite_completed", _on_overwrite_completed)
@@ -48,8 +60,15 @@ func _ready() -> void:
 	var game_state: Node = get_node("/root/GameState")
 	var initial_loop_index: int = maxi(int(game_state.get("loop_index")), 1)
 	loop_manager.call(&"start_loop", initial_loop_index)
+	first_loop_content_manager.call(&"initialize_loop", initial_loop_index)
 	residual_data_manager.call(&"prepare_loop", initial_loop_index)
 	save_data.call(&"create_world_snapshot")
+	crisis_label.visible = initial_loop_index == 1
+	if initial_loop_index == 1:
+		selection_label.text = "03:00 前找到阿栀留下的证据"
+		detail_label.text = String(
+			first_loop_content_manager.call(&"get_crisis_text")
+		)
 	_refresh_residual_presentation()
 	print(
 		"T1.5 smoke: loop %d ready; persistence loaded"
@@ -62,23 +81,27 @@ func _on_area_selected(
 	_display_name: String,
 	_description: String
 ) -> void:
-	var action: Dictionary = action_manager.call(&"get_action", region_id)
+	var action: Dictionary = action_manager.call(
+		&"get_available_action_for_region",
+		region_id
+	)
 	if action.is_empty():
-		selection_label.text = "行动不可用"
-		detail_label.text = "UNKNOWN_ACTION_ID · %s" % region_id
+		selection_label.text = "该区域暂无线索"
+		detail_label.text = "已检查当前时间线中可用的内容。"
 		return
+	var action_id: StringName = StringName(String(action.get("id", "")))
 	var action_accepted: bool = bool(
-		loop_manager.call(&"request_action", region_id)
+		loop_manager.call(&"request_action", action_id)
 	)
 	if not action_accepted:
 		return
 
 	var action_result: Dictionary = action_manager.call(
 		&"execute_action",
-		region_id
+		action_id
 	)
 	if not bool(action_result.get("ok", false)):
-		loop_manager.call(&"cancel_action", region_id)
+		loop_manager.call(&"cancel_action", action_id)
 		selection_label.text = "行动被拒绝"
 		detail_label.text = String(action_result.get("error", "ACTION_ERROR"))
 		return
@@ -86,8 +109,8 @@ func _on_area_selected(
 	selection_count += 1
 	selection_label.text = String(action.get("display_name", region_id))
 	detail_label.text = String(action.get("description", ""))
-	_update_delete_recording_action(region_id)
-	print("T1.1 area selected: %s" % region_id)
+	_update_delete_recording_action(action_id)
+	print("Action selected: %s" % action_id)
 
 	var feedback_tween: Tween = create_tween()
 	feedback_tween.tween_property(
@@ -98,7 +121,8 @@ func _on_area_selected(
 	)
 	feedback_tween.tween_property(feedback_panel, "modulate", Color.WHITE, 0.18)
 	await feedback_tween.finished
-	loop_manager.call(&"complete_action", region_id)
+	loop_manager.call(&"complete_action", action_id)
+	_maybe_offer_first_loop_choice()
 
 
 func _on_loop_state_changed(
@@ -116,8 +140,25 @@ func _on_loop_state_changed(
 
 func _on_loop_timed_out() -> void:
 	loop_status_label.text = "DATA PURGE STARTED"
-	selection_label.text = "03:00 · 调查结束"
-	detail_label.text = "四次行动已用尽。远程数据清除阶段开始。"
+	if pending_first_loop_failure.is_empty():
+		var game_state: Node = get_node("/root/GameState")
+		if int(game_state.get("loop_index")) == 1:
+			pending_first_loop_failure = (
+				first_loop_content_manager.call(&"get_timeout_failure")
+			)
+	if not pending_first_loop_failure.is_empty():
+		selection_label.text = String(
+			pending_first_loop_failure.get("title", "03:00 · 调查结束")
+		)
+		detail_label.text = String(
+			pending_first_loop_failure.get(
+				"detail",
+				"当前时间线失败。读取 SAVE_01 再试一次。"
+			)
+		)
+	else:
+		selection_label.text = "03:00 · 调查结束"
+		detail_label.text = "四次行动已用尽。远程数据清除阶段开始。"
 	for area: Button in investigation_areas:
 		area.disabled = true
 	load_button.disabled = false
@@ -139,6 +180,7 @@ func _on_load_pressed() -> void:
 	var game_state: Node = get_node("/root/GameState")
 	var next_loop_index: int = int(game_state.get("loop_index")) + 1
 	loop_manager.call(&"start_loop", next_loop_index)
+	first_loop_content_manager.call(&"initialize_loop", next_loop_index)
 	residual_data_manager.call(&"prepare_loop", next_loop_index)
 	for area: Button in investigation_areas:
 		area.disabled = false
@@ -146,6 +188,9 @@ func _on_load_pressed() -> void:
 	selection_label.text = "已恢复至 02:47"
 	detail_label.text = "世界状态已恢复；已获得的知识与 SAVE_03 人格不会回滚。"
 	delete_recording_button.visible = false
+	first_loop_decision_overlay.visible = false
+	pending_first_loop_failure.clear()
+	crisis_label.visible = false
 	_refresh_residual_presentation()
 	save_data.call(&"save_persistent_state")
 	print("T1.3 load: world restored; knowledge and persona preserved")
@@ -164,13 +209,60 @@ func _on_delete_recording_pressed() -> void:
 
 
 func _update_delete_recording_action(region_id: StringName) -> void:
-	var was_deleted: bool = bool(
-		residual_data_manager.call(&"has_recording_been_deleted")
+	delete_recording_button.visible = false
+	delete_recording_button.disabled = true
+
+
+func _maybe_offer_first_loop_choice() -> void:
+	var game_state: Node = get_node("/root/GameState")
+	if not bool(
+		first_loop_content_manager.call(
+			&"should_offer_choice",
+			int(game_state.get("loop_index"))
+		)
+	):
+		return
+	_set_interaction_enabled(false)
+	first_loop_decision_overlay.visible = true
+	delete_audio_choice_button.disabled = false
+	keep_audio_choice_button.disabled = false
+
+
+func _on_first_loop_choice(choice_id: StringName) -> void:
+	if not first_loop_decision_overlay.visible:
+		return
+	delete_audio_choice_button.disabled = true
+	keep_audio_choice_button.disabled = true
+
+	var action: Dictionary = action_manager.call(&"get_action", choice_id)
+	var cost: int = int(action.get("cost", 0))
+	if cost > 0 and not bool(loop_manager.call(&"request_action", choice_id)):
+		return
+	var action_result: Dictionary = action_manager.call(
+		&"execute_action",
+		choice_id
 	)
-	var should_show: bool = region_id == &"PHONE" and not was_deleted
-	delete_recording_button.visible = should_show
-	delete_recording_button.disabled = not should_show
-	delete_recording_button.text = "删除本地录音缓存"
+	if not bool(action_result.get("ok", false)):
+		if cost > 0:
+			loop_manager.call(&"cancel_action", choice_id)
+		detail_label.text = String(action_result.get("error", "ACTION_ERROR"))
+		delete_audio_choice_button.disabled = false
+		keep_audio_choice_button.disabled = false
+		return
+
+	pending_first_loop_failure = first_loop_content_manager.call(
+		&"complete_choice",
+		choice_id
+	)
+	if choice_id == &"DELETE_AUDIO":
+		residual_data_manager.call(&"record_recording_deletion")
+		save_data.call(&"save_persistent_state")
+
+	first_loop_decision_overlay.visible = false
+	if cost > 0:
+		loop_manager.call(&"complete_action", choice_id)
+	if not bool(loop_manager.get("timed_out")):
+		loop_manager.call(&"end_loop_early", choice_id)
 
 
 func _refresh_residual_presentation() -> void:

@@ -4,8 +4,10 @@ const DEFAULT_ACTIONS_PATH: String = "res://data/actions.json"
 const SUPPORTED_SCHEMA_VERSION: int = 1
 const REQUIRED_FIELDS: PackedStringArray = [
 	"id",
+	"region",
 	"display_name",
 	"description",
+	"cost",
 	"prerequisites",
 	"effects",
 	"tags",
@@ -67,6 +69,25 @@ func get_action(action_id: StringName) -> Dictionary:
 	return (actions_by_id[action_id] as Dictionary).duplicate(true)
 
 
+func get_available_action_for_region(region_id: StringName) -> Dictionary:
+	var game_state: Node = get_node("/root/GameState")
+	var world_state: Dictionary = game_state.get("world_state")
+	var completed_actions: Dictionary = world_state.get(
+		&"completed_actions",
+		{}
+	)
+	for action_id_value: Variant in actions_by_id:
+		var action_id: StringName = action_id_value
+		var action: Dictionary = actions_by_id[action_id]
+		if StringName(String(action.get("region", ""))) != region_id:
+			continue
+		if bool(completed_actions.get(action_id, false)):
+			continue
+		if _check_prerequisites(action["prerequisites"] as Array).is_empty():
+			return action.duplicate(true)
+	return {}
+
+
 func execute_action(action_id: StringName) -> Dictionary:
 	if not actions_by_id.has(action_id):
 		return {
@@ -92,6 +113,14 @@ func execute_action(action_id: StringName) -> Dictionary:
 		var effect_result: Dictionary = _apply_effect(effect_value)
 		if not bool(effect_result.get("ok", false)):
 			return effect_result
+	var game_state: Node = get_node("/root/GameState")
+	var world_state: Dictionary = game_state.get("world_state")
+	var completed_actions: Dictionary = world_state.get(
+		&"completed_actions",
+		{}
+	)
+	completed_actions[action_id] = true
+	world_state[&"completed_actions"] = completed_actions
 	return {"ok": true, "action": action.duplicate(true)}
 
 

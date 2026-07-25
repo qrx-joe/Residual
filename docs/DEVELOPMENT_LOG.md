@@ -349,3 +349,54 @@
 - T2.1 只迁移现有占位行动，没有提前增加 T2.2 剧情内容
 - 当前 effects 只允许对四类本地状态执行 `SET`，未知 operation 或 target 会安全失败
 - RouterBase 与 Tripo3D 仍未进入完整内容阶段
+
+## 2026-07-25 14:18 - T2.2
+
+### Question
+
+如何让第一轮在三次推荐行动内建立危机和不可兼得的取舍，并让失败自然产生主动读档需求？
+
+### To do
+
+- 实现合照、阿栀录音、电脑空间冲突
+- 让区域点击按 JSON 顺序选择下一项可用行动
+- 实现删除语音 / 保留语音互斥选择
+- 删除后得到证据但失去声纹
+- 保留后留下声纹但证据不解压
+- 第一轮失败后明确提供读档入口
+
+### Next to do
+
+- T2.3：实现第二轮幽灵录音、残缺证据头、第二次删除因果和谈判入口
+
+### Changes
+
+- 扩展 `data/actions.json` 为七个正式行动
+- 创建 `scripts/managers/first_loop_content_manager.gd`
+- 扩展 `scripts/managers/action_manager.gd`，按区域和前置条件选择行动
+- 扩展 `scripts/managers/loop_manager.gd`，支持选择后提前结束循环
+- 更新 `scripts/main.gd`，接入第一轮内容、互斥选择和失败结果
+- 更新 `scenes/main.tscn`，增加开局危机和删除/保留覆盖层
+- 创建 `tests/t2_2_smoke.gd`
+
+### Verification
+
+- T2.2 smoke：开局立即标记 03:00 清除危机
+- T2.2 smoke：电话区域依次返回合照和录音
+- T2.2 smoke：第三次推荐行动后出现删除/保留取舍
+- T2.2 smoke：删除后证据已解压、声纹丢失，并记录跨循环删除因果
+- T2.2 smoke：删除与保留无法同时执行
+- T2.2 smoke：失败结果明确包含“读取 SAVE_01”
+- T1.1–T2.1 全回归通过
+- Godot GUI：完整执行合照、录音、电脑、删除、失败和读档路径
+- 截图：
+  - `docs/evidence/T2.2/crisis-at-start.jpg`
+  - `docs/evidence/T2.2/delete-or-keep-choice.jpg`
+  - `docs/evidence/T2.2/delete-failure-reload.jpg`
+
+### Advice
+
+- “1 分钟危机”通过开局立即显示实现；“3 分钟取舍”通过第三次推荐行动触发实现
+- 实际理解率与主动读档比例仍需后续真人试玩统计，当前自动化只证明流程与提示成立
+- 旧的即时删除按钮已退出正式第一轮路径，避免绕过互斥选择
+- 本任务仍完全离线，未接入 RouterBase 或 Tripo3D

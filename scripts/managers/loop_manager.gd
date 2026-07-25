@@ -87,6 +87,25 @@ func cancel_action(action_id: StringName) -> void:
 	state_changed.emit(actions_remaining, get_display_time(), action_resolving)
 
 
+func end_loop_early(reason: StringName) -> void:
+	if timed_out:
+		return
+	action_index = MAX_ACTIONS
+	actions_remaining = 0
+	action_resolving = false
+	timed_out = true
+	var game_state: Node = _get_game_state()
+	game_state.set("phase", _get_phase_value(game_state, &"LOOP_TIMEOUT"))
+	_sync_game_state()
+	_get_event_bus().emit_signal(
+		&"loop_ended",
+		int(game_state.get("loop_index"))
+	)
+	state_changed.emit(actions_remaining, get_display_time(), action_resolving)
+	loop_timed_out.emit()
+	print("Loop ended early: %s" % reason)
+
+
 func get_display_time() -> String:
 	return LOOP_TIMES[action_index]
 

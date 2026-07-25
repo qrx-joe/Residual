@@ -2,49 +2,110 @@
   "schema_version": 1,
   "actions": [
     {
-      "id": "PHONE",
-      "display_name": "电话与照片",
-      "description": "老式电话、残缺录音与被撕掉一角的合照。",
+      "id": "INSPECT_PHOTO",
+      "region": "PHONE",
+      "display_name": "检查合照",
+      "description": "三个人站在 SAVE_03 原型机前。阿栀所在的位置被撕掉了一角。照片背后写着：03 / 17。",
+      "cost": 1,
       "prerequisites": [],
       "effects": [
-        {
-          "target": "world_state",
-          "operation": "SET",
-          "key": "last_investigated_region",
-          "value": "PHONE"
-        }
+        {"target": "world_state", "operation": "SET", "key": "photo_inspected", "value": true},
+        {"target": "player_knowledge", "operation": "SET", "key": "photo_code_hint", "value": "03/17"}
       ],
-      "tags": ["investigation", "audio", "photo"]
+      "tags": ["investigation", "photo", "VIEW_PHOTO"]
     },
     {
-      "id": "COMPUTER",
-      "display_name": "电脑与 SAVE_03",
-      "description": "加密证据包、操作日志与仍在待机的存档核心。",
-      "prerequisites": [],
-      "effects": [
-        {
-          "target": "world_state",
-          "operation": "SET",
-          "key": "last_investigated_region",
-          "value": "COMPUTER"
-        }
+      "id": "PLAY_AUDIO",
+      "region": "PHONE",
+      "display_name": "播放阿栀录音",
+      "description": "“他们没有删除任何东西。只是让我们看不见。” 后半段损坏，但声纹仍可读取。",
+      "cost": 1,
+      "prerequisites": [
+        {"state": "world_state", "key": "audio_exists", "equals": true}
       ],
-      "tags": ["investigation", "terminal", "save_03"]
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "audio_played", "value": true},
+        {"target": "world_state", "operation": "SET", "key": "soundprint_available", "value": true},
+        {"target": "player_knowledge", "operation": "SET", "key": "azhi_voice_content", "value": true}
+      ],
+      "tags": ["investigation", "audio", "PLAY_AZHI_AUDIO"]
     },
     {
-      "id": "DRAWER",
-      "display_name": "信件与抽屉",
-      "description": "未寄出的信、上锁抽屉与一枚离线备份芯片。",
+      "id": "SCAN_COMPUTER",
+      "region": "COMPUTER",
+      "display_name": "扫描电脑与 SAVE_03",
+      "description": "EVIDENCE_03.enc 需要 2.4 GB，当前仅 0.6 GB。删除本地语音缓存后才能解压。",
+      "cost": 1,
       "prerequisites": [],
       "effects": [
-        {
-          "target": "world_state",
-          "operation": "SET",
-          "key": "last_investigated_region",
-          "value": "DRAWER"
-        }
+        {"target": "world_state", "operation": "SET", "key": "evidence_found", "value": true},
+        {"target": "player_knowledge", "operation": "SET", "key": "evidence_path_known", "value": true}
       ],
-      "tags": ["investigation", "letter", "backup"]
+      "tags": ["investigation", "terminal", "FIND_EVIDENCE", "crisis"]
+    },
+    {
+      "id": "READ_LETTER",
+      "region": "DRAWER",
+      "display_name": "阅读未寄出的信",
+      "description": "信中写着清除行动与抽屉提示。合照背面的 03 / 17 正是抽屉密码。",
+      "cost": 1,
+      "prerequisites": [],
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "letter_read", "value": true},
+        {"target": "player_knowledge", "operation": "SET", "key": "drawer_code_known", "value": true}
+      ],
+      "tags": ["investigation", "letter", "READ_LETTER"]
+    },
+    {
+      "id": "OPEN_DRAWER",
+      "region": "DRAWER",
+      "display_name": "打开抽屉",
+      "description": "03 / 17。锁打开了。里面是一枚脱离网络的物理备份芯片。",
+      "cost": 1,
+      "prerequisites": [
+        {"state": "player_knowledge", "key": "drawer_code_known", "equals": true}
+      ],
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "physical_chip_acquired", "value": true},
+        {"target": "player_knowledge", "operation": "SET", "key": "physical_chip_location", "value": true}
+      ],
+      "tags": ["investigation", "backup", "GET_PHYSICAL_CHIP"]
+    },
+    {
+      "id": "DELETE_AUDIO",
+      "region": "DECISION",
+      "display_name": "删除语音，解压证据",
+      "description": "证据包完成解压，但阿栀的本地声纹丢失，当前时间线无法解密。",
+      "cost": 1,
+      "prerequisites": [
+        {"state": "world_state", "key": "evidence_found", "equals": true},
+        {"state": "world_state", "key": "audio_exists", "equals": true},
+        {"state": "world_state", "key": "first_loop_choice", "equals": ""}
+      ],
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "audio_exists", "value": false},
+        {"target": "world_state", "operation": "SET", "key": "soundprint_available", "value": false},
+        {"target": "world_state", "operation": "SET", "key": "evidence_extracted", "value": true},
+        {"target": "world_state", "operation": "SET", "key": "first_loop_choice", "value": "DELETE"}
+      ],
+      "tags": ["decision", "DELETE_AZHI_AUDIO"]
+    },
+    {
+      "id": "KEEP_AUDIO",
+      "region": "DECISION",
+      "display_name": "保留语音，退出",
+      "description": "阿栀的声纹仍在，但 EVIDENCE_03.enc 没有足够空间解压。",
+      "cost": 0,
+      "prerequisites": [
+        {"state": "world_state", "key": "evidence_found", "equals": true},
+        {"state": "world_state", "key": "first_loop_choice", "equals": ""}
+      ],
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "audio_preserved", "value": true},
+        {"target": "world_state", "operation": "SET", "key": "evidence_extracted", "value": false},
+        {"target": "world_state", "operation": "SET", "key": "first_loop_choice", "value": "KEEP"}
+      ],
+      "tags": ["decision", "PRESERVE_AZHI_AUDIO"]
     }
   ]
 }
