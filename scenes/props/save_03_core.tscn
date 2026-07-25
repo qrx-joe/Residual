@@ -1,0 +1,104 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/visual/save_03_core_visual.gd" id="1_visual"]
+
+[sub_resource type="StandardMaterial3D" id="MaterialChassis"]
+albedo_color = Color(0.067, 0.086, 0.133, 1)
+metallic = 0.72
+roughness = 0.32
+
+[sub_resource type="StandardMaterial3D" id="MaterialGlass"]
+transparency = 1
+albedo_color = Color(0.12, 0.32, 0.38, 0.23)
+metallic = 0.18
+roughness = 0.12
+
+[sub_resource type="BoxMesh" id="MeshChassis"]
+material = SubResource("MaterialChassis")
+size = Vector3(2.4, 0.55, 1.8)
+
+[sub_resource type="BoxMesh" id="MeshGlass"]
+material = SubResource("MaterialGlass")
+size = Vector3(1.82, 1.22, 1.42)
+
+[sub_resource type="BoxMesh" id="MeshDataLayer"]
+material = SubResource("MaterialChassis")
+size = Vector3(1.28, 0.08, 0.96)
+
+[sub_resource type="BoxMesh" id="MeshIndicator"]
+size = Vector3(1.0, 0.12, 0.04)
+
+[sub_resource type="TorusMesh" id="MeshFlow"]
+inner_radius = 0.32
+outer_radius = 0.42
+rings = 24
+ring_segments = 12
+
+[sub_resource type="BoxMesh" id="MeshHalo"]
+size = Vector3(2.65, 2.0, 2.08)
+
+[sub_resource type="BoxMesh" id="MeshCrack"]
+size = Vector3(0.035, 0.7, 0.025)
+
+[node name="Save03Core" type="Node3D" node_paths=PackedStringArray("model_root", "indicator_mesh", "flow_mesh", "protection_halo", "crack_overlay", "ghost_echo")]
+script = ExtResource("1_visual")
+model_root = NodePath("ModelMount")
+indicator_mesh = NodePath("Indicator")
+flow_mesh = NodePath("Flow")
+protection_halo = NodePath("ProtectionHalo")
+crack_overlay = NodePath("CrackOverlay")
+ghost_echo = NodePath("GhostEcho")
+
+[node name="ModelMount" type="Node3D" parent="."]
+
+[node name="PlaceholderChassis" type="MeshInstance3D" parent="ModelMount"]
+position = Vector3(0, -0.62, 0)
+mesh = SubResource("MeshChassis")
+
+[node name="PlaceholderGlass" type="MeshInstance3D" parent="ModelMount"]
+position = Vector3(0, 0.22, 0)
+mesh = SubResource("MeshGlass")
+
+[node name="DataLayerBottom" type="MeshInstance3D" parent="ModelMount"]
+position = Vector3(0, -0.1, 0)
+mesh = SubResource("MeshDataLayer")
+
+[node name="DataLayerMiddle" type="MeshInstance3D" parent="ModelMount"]
+position = Vector3(0, 0.18, 0)
+mesh = SubResource("MeshDataLayer")
+
+[node name="DataLayerTop" type="MeshInstance3D" parent="ModelMount"]
+position = Vector3(0, 0.46, 0)
+mesh = SubResource("MeshDataLayer")
+
+[node name="Indicator" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.62, 0.92)
+mesh = SubResource("MeshIndicator")
+
+[node name="Flow" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.18, 0)
+mesh = SubResource("MeshFlow")
+
+[node name="ProtectionHalo" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.02, 0)
+mesh = SubResource("MeshHalo")
+
+[node name="CrackOverlay" type="Node3D" parent="."]
+
+[node name="CrackA" type="MeshInstance3D" parent="CrackOverlay"]
+position = Vector3(-0.3, 0.12, 0.93)
+rotation = Vector3(0, 0, 0.48)
+mesh = SubResource("MeshCrack")
+
+[node name="CrackB" type="MeshInstance3D" parent="CrackOverlay"]
+position = Vector3(0.08, 0.02, 0.93)
+rotation = Vector3(0, 0, -0.62)
+mesh = SubResource("MeshCrack")
+
+[node name="CrackC" type="MeshInstance3D" parent="CrackOverlay"]
+position = Vector3(0.42, -0.1, 0.93)
+rotation = Vector3(0, 0, 0.35)
+mesh = SubResource("MeshCrack")
+
+[node name="GhostEcho" type="Node3D" parent="."]
+
