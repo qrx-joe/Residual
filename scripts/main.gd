@@ -10,8 +10,16 @@ extends Control
 @onready var load_button: Button = %LoadButton
 @onready var delete_recording_button: Button = %DeleteRecordingButton
 @onready var ghost_waveform_label: Label = %GhostWaveformLabel
+@onready var force_overwrite_button: Button = %ForceOverwriteButton
+@onready var overwrite_overlay: Control = %OverwriteOverlay
+@onready var overwrite_progress: ProgressBar = %OverwriteProgress
+@onready var overwrite_stage_label: Label = %OverwriteStageLabel
+@onready var save_03_line_label: Label = %Save03LineLabel
+@onready var overwrite_continue_button: Button = %OverwriteContinueButton
+@onready var ghost_save_slot: VBoxContainer = %GhostSaveSlot
 @onready var loop_manager: Node = %LoopManager
 @onready var residual_data_manager: Node = %ResidualDataManager
+@onready var anomaly_controller: Node = %AnomalyController
 @onready var save_data: Node = get_node("/root/SaveData")
 @onready var investigation_areas: Array[Button] = [
 	%PhoneArea,
@@ -30,6 +38,11 @@ func _ready() -> void:
 	loop_manager.connect(&"loop_timed_out", _on_loop_timed_out)
 	load_button.pressed.connect(_on_load_pressed)
 	delete_recording_button.pressed.connect(_on_delete_recording_pressed)
+	force_overwrite_button.pressed.connect(_on_force_overwrite_pressed)
+	overwrite_continue_button.pressed.connect(_on_overwrite_continue_pressed)
+	anomaly_controller.connect(&"progress_changed", _on_overwrite_progress_changed)
+	anomaly_controller.connect(&"stage_changed", _on_overwrite_stage_changed)
+	anomaly_controller.connect(&"overwrite_completed", _on_overwrite_completed)
 
 	var game_state: Node = get_node("/root/GameState")
 	var initial_loop_index: int = maxi(int(game_state.get("loop_index")), 1)
@@ -38,7 +51,7 @@ func _ready() -> void:
 	save_data.call(&"create_world_snapshot")
 	_refresh_residual_presentation()
 	print(
-		"T1.4 smoke: loop %d ready; persistence loaded"
+		"T1.5 smoke: loop %d ready; persistence loaded"
 		% initial_loop_index
 	)
 
@@ -150,3 +163,71 @@ func _refresh_residual_presentation() -> void:
 	)
 	ghost_waveform_label.visible = has_ghost_recording
 	save_status_label.text = "已记录" if has_ghost_recording else "已保存"
+	var has_ghost_save: bool = bool(
+		anomaly_controller.call(&"has_completed_overwrite")
+	)
+	ghost_save_slot.visible = has_ghost_save
+	force_overwrite_button.visible = has_ghost_recording and not has_ghost_save
+	force_overwrite_button.disabled = not force_overwrite_button.visible
+
+
+func _on_force_overwrite_pressed() -> void:
+	var started: bool = bool(
+		anomaly_controller.call(&"request_force_overwrite")
+	)
+	if not started:
+		return
+
+	_set_interaction_enabled(false)
+	overwrite_overlay.visible = true
+	overwrite_progress.value = 0.0
+	overwrite_stage_label.text = "FORCED OVERWRITE · READING"
+	save_03_line_label.text = ""
+	overwrite_continue_button.visible = false
+
+
+func _on_overwrite_progress_changed(value: float) -> void:
+	overwrite_progress.value = value
+
+
+func _on_overwrite_stage_changed(stage: int) -> void:
+	match stage:
+		1:
+			overwrite_stage_label.text = "FORCED OVERWRITE · READING"
+		2:
+			overwrite_stage_label.text = "99% · SIGNAL HELD"
+		3:
+			overwrite_stage_label.text = "OVERRIDE REJECTED · REVERSING"
+		4:
+			overwrite_stage_label.text = "SAVE_03 CORE · FRACTURE DETECTED"
+		5:
+			overwrite_stage_label.text = "GHOST SAVE · UNDELETABLE"
+		6:
+			overwrite_stage_label.text = "她曾经来过"
+
+
+func _on_overwrite_completed() -> void:
+	save_03_line_label.text = "SAVE_03：你可以回去。\n她留下。"
+	overwrite_continue_button.visible = true
+	ghost_save_slot.visible = true
+	force_overwrite_button.visible = false
+	save_data.call(&"save_persistent_state")
+
+
+func _on_overwrite_continue_pressed() -> void:
+	overwrite_overlay.visible = false
+	_set_interaction_enabled(true)
+	_refresh_residual_presentation()
+
+
+func _set_interaction_enabled(enabled: bool) -> void:
+	var loop_has_timed_out: bool = bool(loop_manager.get("timed_out"))
+	for area: Button in investigation_areas:
+		area.disabled = not enabled or loop_has_timed_out
+	load_button.disabled = not enabled or not loop_has_timed_out
+	delete_recording_button.disabled = (
+		not enabled or not delete_recording_button.visible
+	)
+	force_overwrite_button.disabled = (
+		not enabled or not force_overwrite_button.visible
+	)

@@ -255,3 +255,54 @@
 - 当前删除是垂直切片中的非行动消耗操作；完整行动选择由 T2.2 接入
 - T1.4 全程本地确定性运行，未接入 RouterBase 或 Tripo3D
 - 损坏存档恢复尚未实现，后续存档稳健性任务需补充
+
+## 2026-07-25 13:10 - T1.5
+
+### Question
+
+如何把强制覆盖做成不可跳过的固定高光，同时确保动画结束后游戏能够继续？
+
+### To do
+
+- 增加强制覆盖入口
+- 固定触发 99% 停顿和回退至 43%
+- 在演出期间建立全局输入锁
+- 创建不可删除的幽灵存档“她曾经来过”
+- 显示 SAVE_03 的两句固定短台词
+- 动画结束后恢复调查
+
+### Next to do
+
+- T2.1：把行动定义和结果迁移到 JSON，由本地 Manager 统一执行
+
+### Changes
+
+- 创建 `scripts/managers/anomaly_controller.gd`
+- 更新 `scripts/main.gd`，接入覆盖流程、输入锁和继续调查
+- 更新 `scenes/main.tscn`，增加覆盖层、进度条、幽灵存档槽与固定台词
+- 创建 `tests/t1_5_smoke.gd`
+- 创建 `docs/evidence/T1.5/` 验收截图
+
+### Verification
+
+- T1.5 smoke：快速二次请求被拒绝，覆盖流程只启动一次
+- T1.5 smoke：阶段严格按读取、99% 停顿、倒退、核心裂纹、幽灵存档、完成执行
+- T1.5 smoke：进度精确到 99% 后回退至 43%
+- T1.5 smoke：幽灵存档不可删除，`conflict +2`，历史只记录一次
+- T1.1、T1.2、T1.3、T1.4 回归均通过
+- Godot GUI：隔离存档完整执行第一轮删除、第二轮强制覆盖
+- Godot GUI：显示 `99% · SIGNAL HELD`
+- Godot GUI：终态显示 43%、“她曾经来过”和两句固定台词
+- Godot GUI：点击“继续调查”后再次行动，时间从 02:47 推进到 02:50
+- 截图：
+  - `docs/evidence/T1.5/99-percent-paused.jpg`
+  - `docs/evidence/T1.5/ghost-save-created.jpg`
+  - `docs/evidence/T1.5/continued-after-overwrite.jpg`
+- GUI 隔离测试存档已清理，默认正式存档未触碰
+
+### Advice
+
+- 固定高光完全由本地 `AnomalyController` 决定，未交给 AI
+- `RESIDUAL_ANOMALY_TIMING_SCALE` 仅用于延长验收采样窗口；默认正式时序不变
+- 当前核心裂纹以文字异常占位，正式 Shader 和故障音分别留给 T4.2 与 T4.3
+- RouterBase 和 Tripo3D 未接入 Milestone 1

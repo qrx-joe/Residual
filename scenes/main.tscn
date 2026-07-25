@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
 [ext_resource type="Script" path="res://scripts/managers/loop_manager.gd" id="3_loop"]
 [ext_resource type="Script" path="res://scripts/managers/residual_data_manager.gd" id="4_residual"]
+[ext_resource type="Script" path="res://scripts/managers/anomaly_controller.gd" id="5_anomaly"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
 bg_color = Color(0.105, 0.133, 0.192, 0.96)
@@ -93,6 +94,10 @@ script = ExtResource("3_loop")
 [node name="ResidualDataManager" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("4_residual")
+
+[node name="AnomalyController" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("5_anomaly")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -358,12 +363,37 @@ theme_override_font_sizes/font_size = 16
 text = "已保存"
 vertical_alignment = 1
 
+[node name="GhostSaveSlot" type="VBoxContainer" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="GhostSaveName" type="Label" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow/GhostSaveSlot"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.36, 0.36, 1)
+theme_override_font_sizes/font_size = 15
+text = "她曾经来过"
+
+[node name="GhostSaveStatus" type="Label" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow/GhostSaveSlot"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "GHOST SAVE · 无法删除"
+
 [node name="DeleteRecordingButton" type="Button" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow"]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(220, 40)
 layout_mode = 2
 text = "删除本地录音缓存"
+
+[node name="ForceOverwriteButton" type="Button" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(160, 40)
+layout_mode = 2
+text = "强制覆盖"
 
 [node name="SaveSpacer" type="Control" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow"]
 layout_mode = 2
@@ -375,3 +405,67 @@ custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 disabled = true
 text = "读取 SAVE_01"
+
+[node name="OverwriteOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.025, 0.035, 0.055, 0.94)
+
+[node name="OverwriteCenter" type="CenterContainer" parent="OverwriteOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OverwritePanel" type="PanelContainer" parent="OverwriteOverlay/OverwriteCenter"]
+custom_minimum_size = Vector2(640, 270)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="OverwriteMargin" type="MarginContainer" parent="OverwriteOverlay/OverwriteCenter/OverwritePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="OverwriteLayout" type="VBoxContainer" parent="OverwriteOverlay/OverwriteCenter/OverwritePanel/OverwriteMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="OverwriteStageLabel" type="Label" parent="OverwriteOverlay/OverwriteCenter/OverwritePanel/OverwriteMargin/OverwriteLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.36, 0.36, 1)
+theme_override_font_sizes/font_size = 20
+text = "FORCED OVERWRITE · READING"
+horizontal_alignment = 1
+
+[node name="OverwriteProgress" type="ProgressBar" parent="OverwriteOverlay/OverwriteCenter/OverwritePanel/OverwriteMargin/OverwriteLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+show_percentage = true
+
+[node name="Save03LineLabel" type="Label" parent="OverwriteOverlay/OverwriteCenter/OverwritePanel/OverwriteMargin/OverwriteLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="OverwriteContinueButton" type="Button" parent="OverwriteOverlay/OverwriteCenter/OverwritePanel/OverwriteMargin/OverwriteLayout"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "继续调查"
