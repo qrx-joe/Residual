@@ -48,6 +48,7 @@
 - [x] T5.1 连续 10 轮自动回归（140/140，零资源泄漏）
 - [x] T5.2 Windows 离线配对构建、实机运行与 fallback 验收
 - [x] T5.4 Demo Mode 完整实现与现场演示准备
+- [x] T5.4 RouterBase API 配置与测试（地区限制，fallback 完全可用）
 
 ## 提交前剩余
 
