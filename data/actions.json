@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "actions": [
+    {
+      "id": "PHONE",
+      "display_name": "电话与照片",
+      "description": "老式电话、残缺录音与被撕掉一角的合照。",
+      "prerequisites": [],
+      "effects": [
+        {
+          "target": "world_state",
+          "operation": "SET",
+          "key": "last_investigated_region",
+          "value": "PHONE"
+        }
+      ],
+      "tags": ["investigation", "audio", "photo"]
+    },
+    {
+      "id": "COMPUTER",
+      "display_name": "电脑与 SAVE_03",
+      "description": "加密证据包、操作日志与仍在待机的存档核心。",
+      "prerequisites": [],
+      "effects": [
+        {
+          "target": "world_state",
+          "operation": "SET",
+          "key": "last_investigated_region",
+          "value": "COMPUTER"
+        }
+      ],
+      "tags": ["investigation", "terminal", "save_03"]
+    },
+    {
+      "id": "DRAWER",
+      "display_name": "信件与抽屉",
+      "description": "未寄出的信、上锁抽屉与一枚离线备份芯片。",
+      "prerequisites": [],
+      "effects": [
+        {
+          "target": "world_state",
+          "operation": "SET",
+          "key": "last_investigated_region",
+          "value": "DRAWER"
+        }
+      ],
+      "tags": ["investigation", "letter", "backup"]
+    }
+  ]
+}

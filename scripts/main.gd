@@ -20,6 +20,7 @@ extends Control
 @onready var loop_manager: Node = %LoopManager
 @onready var residual_data_manager: Node = %ResidualDataManager
 @onready var anomaly_controller: Node = %AnomalyController
+@onready var action_manager: Node = %ActionManager
 @onready var save_data: Node = get_node("/root/SaveData")
 @onready var investigation_areas: Array[Button] = [
 	%PhoneArea,
@@ -58,18 +59,33 @@ func _ready() -> void:
 
 func _on_area_selected(
 	region_id: StringName,
-	display_name: String,
-	description: String
+	_display_name: String,
+	_description: String
 ) -> void:
+	var action: Dictionary = action_manager.call(&"get_action", region_id)
+	if action.is_empty():
+		selection_label.text = "行动不可用"
+		detail_label.text = "UNKNOWN_ACTION_ID · %s" % region_id
+		return
 	var action_accepted: bool = bool(
 		loop_manager.call(&"request_action", region_id)
 	)
 	if not action_accepted:
 		return
 
+	var action_result: Dictionary = action_manager.call(
+		&"execute_action",
+		region_id
+	)
+	if not bool(action_result.get("ok", false)):
+		loop_manager.call(&"cancel_action", region_id)
+		selection_label.text = "行动被拒绝"
+		detail_label.text = String(action_result.get("error", "ACTION_ERROR"))
+		return
+
 	selection_count += 1
-	selection_label.text = display_name
-	detail_label.text = description
+	selection_label.text = String(action.get("display_name", region_id))
+	detail_label.text = String(action.get("description", ""))
 	_update_delete_recording_action(region_id)
 	print("T1.1 area selected: %s" % region_id)
 

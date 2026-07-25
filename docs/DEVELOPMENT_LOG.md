@@ -306,3 +306,46 @@
 - `RESIDUAL_ANOMALY_TIMING_SCALE` 仅用于延长验收采样窗口；默认正式时序不变
 - 当前核心裂纹以文字异常占位，正式 Shader 和故障音分别留给 T4.2 与 T4.3
 - RouterBase 和 Tripo3D 未接入 Milestone 1
+
+## 2026-07-25 13:32 - T2.1
+
+### Question
+
+如何让行动内容由 JSON 驱动，使新增行动不再要求修改主 UI 逻辑，同时安全拒绝非法 action ID？
+
+### To do
+
+- 创建 `actions.json`
+- 定义前置条件、effects 和 tags
+- 创建行动加载、校验和执行 Manager
+- 让主 UI 从行动数据读取名称和说明
+- 为非法 action ID 提供不修改状态的结构化错误
+
+### Next to do
+
+- T2.2：用数据驱动行动实现第一轮完整内容与删除/保留取舍
+
+### Changes
+
+- 创建 `data/actions.json`
+- 创建 `scripts/managers/action_manager.gd`
+- 更新 `scripts/main.gd`，移除行动展示的硬编码依赖
+- 更新 `scripts/managers/loop_manager.gd`，增加安全取消入口
+- 更新 `scenes/main.tscn`，挂载 `ActionManager`
+- 创建 `tests/t2_1_smoke.gd`
+
+### Verification
+
+- T2.1 smoke：加载三个 JSON 行动及其 effects、tags
+- T2.1 smoke：有效行动通过 Manager 修改 `world_state`
+- T2.1 smoke：非法 action ID 返回 `UNKNOWN_ACTION_ID`，不修改状态
+- T2.1 smoke：运行时仅向 JSON 增加第四个行动即可加载，无需修改 UI 逻辑
+- T1.1–T1.5 全回归和主场景加载通过
+- Godot GUI：电话行动从 JSON 读取名称与说明，执行后推进到 02:50
+- 截图：`docs/evidence/T2.1/json-action-executed.jpg`
+
+### Advice
+
+- T2.1 只迁移现有占位行动，没有提前增加 T2.2 剧情内容
+- 当前 effects 只允许对四类本地状态执行 `SET`，未知 operation 或 target 会安全失败
+- RouterBase 与 Tripo3D 仍未进入完整内容阶段

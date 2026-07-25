@@ -75,6 +75,18 @@ func complete_action(action_id: StringName) -> void:
 		loop_timed_out.emit()
 
 
+func cancel_action(action_id: StringName) -> void:
+	if not action_resolving:
+		return
+	action_resolving = false
+	_get_event_bus().emit_signal(
+		&"action_resolved",
+		action_id,
+		{"cancelled": true}
+	)
+	state_changed.emit(actions_remaining, get_display_time(), action_resolving)
+
+
 func get_display_time() -> String:
 	return LOOP_TIMES[action_index]
 

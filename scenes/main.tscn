@@ -1,10 +1,11 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
 [ext_resource type="Script" path="res://scripts/managers/loop_manager.gd" id="3_loop"]
 [ext_resource type="Script" path="res://scripts/managers/residual_data_manager.gd" id="4_residual"]
 [ext_resource type="Script" path="res://scripts/managers/anomaly_controller.gd" id="5_anomaly"]
+[ext_resource type="Script" path="res://scripts/managers/action_manager.gd" id="6_action"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
 bg_color = Color(0.105, 0.133, 0.192, 0.96)
@@ -98,6 +99,10 @@ script = ExtResource("4_residual")
 [node name="AnomalyController" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("5_anomaly")
+
+[node name="ActionManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("6_action")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
