@@ -38,4 +38,3 @@ func _set_state(state_index: int) -> void:
 	state_label.text = "SAVE_03 / %s" % STATE_NAMES[state_index]
 	for index: int in state_buttons.size():
 		state_buttons[index].disabled = index == state_index
-

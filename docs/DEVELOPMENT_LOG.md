@@ -706,3 +706,32 @@
 - AI 反应不写人格、证据、结局或固定高光；核心 mutation 仍由本地 Manager 决定
 - `RESIDUAL_AI_ENABLED=1` 才启用后端调用，默认构建保持完全离线
 - 真实 RouterBase 模型调用仍需要用户在本机后端提供 Token 后单独验收
+
+## 2026-07-25 15:17 - 截止时间提交冻结
+
+### Decision
+
+- 16:00 前优先提交已经完成的核心逻辑闭环
+- 正式 3D、全套美术、配音和真实 RouterBase 调用不得阻塞构建
+- 不再增加新玩法、剧情分支或结局
+
+### Changes
+
+- 创建 T4.1 SAVE_03 五态控制器、道具场景和预览场景
+- 创建 `tests/t4_1_smoke.gd`
+- 创建 Windows 导出预设
+- 生成 PCK 配对 Windows 候选包
+- 创建 `docs/SUBMISSION_BUILD.md`
+
+### Verification
+
+- T1.1–T4.1 共 12 个 smoke 全量通过
+- 五态切换前后模型实例 ID 不变
+- Windows 候选包成功启动
+- 打包后实机进入第一轮删除或保留录音关键选择
+- ZIP SHA-256：`59BEB1BCFDEA49D21C298287DDCAE80D3D34CEE0709E92E6DBA434EA326903AF`
+
+### Remaining
+
+- Tripo3D GLB 正在生成，仅在不影响提交时接入
+- 活动页面最终上传和提交由用户完成

@@ -101,4 +101,3 @@ rotation = Vector3(0, 0, 0.35)
 mesh = SubResource("MeshCrack")
 
 [node name="GhostEcho" type="Node3D" parent="."]
-

@@ -2,6 +2,7 @@
 .godot/
 *.tmp
 *.import
+*.gd.uid
 
 # Builds
 build/

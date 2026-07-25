@@ -9,7 +9,7 @@
 
 ## 当前阶段
 
-`MILESTONE_3_COMPLETE`
+`SUBMISSION_CANDIDATE`
 
 ## 已完成
 
@@ -39,16 +39,23 @@
 - [x] T3.1 后端骨架
 - [x] T3.2 RouterBase 适配器
 - [x] T3.3 Godot AIClient
+- [x] 核心闭环提交冻结
+- [x] Windows PCK 配对构建
+- [x] 打包后实机进入第一轮关键选择
+- [x] T4.1 五态代码控制与无重载测试
 
-## 下一步
+## 提交前剩余
 
-- [ ] T4.1 SAVE_03 核心
+- [ ] 下载并检查 Tripo3D GLB；仅在不影响提交时接入
+- [ ] 上传 `build/RESIDUAL-Windows.zip`
+- [ ] 由用户完成活动页面最终提交
 
 ## 当前风险
 
 - RouterBase 具体模型与 JSON 输出能力尚未在真实 Token 下验证
-- Tripo3D 的最终模型风格尚未锁定
+- Tripo3D 模型正在生成，正式 GLB 尚未导入
 - 阿栀正式配音来源尚未确定
+- 当前 Windows 包使用同版本 Godot 编辑器运行二进制与 PCK 配对，体积大于标准模板导出
 
 ## 范围冻结
 
@@ -60,3 +67,8 @@
 - 开放式聊天
 - 实时生成素材
 - 战斗
+
+截止时间提交版额外冻结：
+
+- 不让 RouterBase、正式 3D、全套美术或配音阻塞核心闭环构建
+- 不再增加玩法、剧情分支或第三个大型结局
