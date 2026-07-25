@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/managers/save_will_manager.gd" id="9_save_will"]
 [ext_resource type="Script" path="res://scripts/managers/third_loop_content_manager.gd" id="10_third_loop"]
 [ext_resource type="Script" path="res://scripts/managers/ending_manager.gd" id="11_ending"]
+[ext_resource type="Script" path="res://scripts/ai/ai_client.gd" id="12_ai_client"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
 bg_color = Color(0.105, 0.133, 0.192, 0.96)
@@ -128,6 +129,12 @@ script = ExtResource("10_third_loop")
 [node name="EndingManager" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("11_ending")
+
+[node name="AIClient" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("12_ai_client")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="AIClient"]
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -719,6 +726,15 @@ custom_minimum_size = Vector2(0, 66)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
 theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+
+[node name="AIReactionLabel" type="Label" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.63, 0.48, 1)
+theme_override_font_sizes/font_size = 15
 horizontal_alignment = 1
 
 [node name="ContinueAfterNegotiationButton" type="Button" parent="NegotiationOptionsOverlay/OptionsCenter/OptionsPanel/OptionsMargin/OptionsLayout"]

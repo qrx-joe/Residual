@@ -654,3 +654,55 @@
 - 本节点没有真实 Token，因此只确认协议实现和 mock 行为；真实模型 JSON 稳定性仍待凭据实测
 - 适配器从不把 API Key 写入响应、错误消息或业务日志
 - 5 秒是整个调用的总预算，不是每次重试各 5 秒
+
+## 2026-07-25 17:40 - T3.3
+
+### Question
+
+如何让 Godot 异步调用本地后端、再次拒绝越权 AI 输出，并保证断网和超时不阻断谈判或通关？
+
+### To do
+
+- 实现 Godot `HTTPRequest` 客户端
+- 从本地状态组装最小请求上下文
+- 在客户端二次校验 decision、target、mutation 和文本预算
+- 所有失败异步进入本地 fallback
+- 将 AI 结果限制为谈判短反应，不直接修改核心状态
+- 验证 Godot 到 Fastify 的真实 HTTP 链路
+
+### Next to do
+
+- T4.1：使用 Tripo3D 制作并导入 SAVE_03 核心模型与五个可控视觉状态
+
+### Changes
+
+- 创建 `scripts/ai/ai_client.gd`
+- 创建 `scripts/ai/ai_response_validator.gd`
+- 更新 `scripts/autoload/config.gd`，支持安全的后端环境变量
+- 更新 `scenes/main.tscn`，挂载 `AIClient`、`HTTPRequest` 和短反应 UI
+- 更新 `scripts/main.gd`，按本地谈判结果计算每次 AI 白名单
+- 创建 `tests/t3_3_smoke.gd`
+- 创建 `tests/t3_3_http_integration.gd`
+- 更新 `backend/README.md`
+
+### Verification
+
+- T3.3 smoke：合法结果通过客户端校验
+- T3.3 smoke：未知 mutation 导致整份响应被拒绝
+- T3.3 smoke：不在本次集合内的 decision 被拒绝
+- T3.3 smoke：请求上下文不含 Token、Authorization 或 API Key
+- T3.3 smoke：禁用 AI 时下一帧返回 fallback，不在调用栈同步阻塞
+- T3.3 smoke：后端不可达时场景树持续运行并返回 fallback
+- T1.1–T3.3 共十一个 smoke 全量回归通过
+- 真实集成：Godot `HTTPRequest` → Fastify → 本地决策 → Godot 二次校验通过
+- Godot GUI：第二轮谈判显示离线 `SAVE_03：录音留下。`
+- Godot GUI：AI 反应出现后“保存决定并读档”仍可点击并进入 03:00
+- 截图：`docs/evidence/T3.3/offline-ai-fallback-negotiation.png`
+- GUI 隔离种子存档与本地服务进程均已清理
+
+### Advice
+
+- Godot 客户端只知道本地后端 URL，RouterBase Token 仍只属于后端环境
+- AI 反应不写人格、证据、结局或固定高光；核心 mutation 仍由本地 Manager 决定
+- `RESIDUAL_AI_ENABLED=1` 才启用后端调用，默认构建保持完全离线
+- 真实 RouterBase 模型调用仍需要用户在本机后端提供 Token 后单独验收

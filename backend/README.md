@@ -23,6 +23,15 @@ npm run dev
 没有 Token、断网、超时、HTTP 错误、非法 JSON 或白名单越权时，服务
 立即使用确定性的本地 fallback，游戏主线不依赖网络。
 
+本地后端启动后，可在启动 Godot 前设置：
+
+```powershell
+$env:RESIDUAL_AI_ENABLED='1'
+$env:RESIDUAL_BACKEND_URL='http://127.0.0.1:8787'
+```
+
+Godot 只连接本地后端，不读取 `ROUTERBASE_API_KEY`。
+
 官方接口资料：
 
 - <https://docs.routerbase.com/api-reference/chat-completions>

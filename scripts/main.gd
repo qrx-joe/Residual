@@ -34,6 +34,7 @@ extends Control
 @onready var conceal_button: Button = %ConcealButton
 @onready var negotiation_force_button: Button = %ForceButton
 @onready var negotiation_result_label: Label = %NegotiationResultLabel
+@onready var ai_reaction_label: Label = %AIReactionLabel
 @onready var continue_after_negotiation_button: Button = (
 	%ContinueAfterNegotiationButton
 )
@@ -58,6 +59,7 @@ extends Control
 @onready var third_loop_content_manager: Node = %ThirdLoopContentManager
 @onready var save_will_manager: Node = %SaveWillManager
 @onready var ending_manager: Node = %EndingManager
+@onready var ai_client: Node = %AIClient
 @onready var save_data: Node = get_node("/root/SaveData")
 @onready var investigation_areas: Array[Button] = [
 	%PhoneArea,
@@ -102,6 +104,7 @@ func _ready() -> void:
 	continue_after_negotiation_button.pressed.connect(
 		_on_continue_after_negotiation
 	)
+	ai_client.connect(&"decision_ready", _on_ai_decision_ready)
 	public_truth_button.pressed.connect(
 		_on_ending_selected.bind(&"PUBLIC_TRUTH")
 	)
@@ -395,6 +398,7 @@ func _on_enter_negotiation_pressed() -> void:
 	negotiation_entry_overlay.visible = false
 	negotiation_options_overlay.visible = true
 	negotiation_result_label.visible = false
+	ai_reaction_label.visible = false
 	continue_after_negotiation_button.visible = false
 	for button: Button in _get_negotiation_buttons():
 		button.disabled = false
@@ -415,6 +419,7 @@ func _on_negotiation_choice(decision_id: StringName) -> void:
 	for button: Button in _get_negotiation_buttons():
 		button.disabled = true
 	save_data.call(&"save_persistent_state")
+	_request_ai_reaction(decision_id)
 
 	if bool(result.get("trigger_force_overwrite", false)):
 		negotiation_options_overlay.visible = false
@@ -441,6 +446,49 @@ func _on_negotiation_choice(decision_id: StringName) -> void:
 	negotiation_result_label.visible = true
 	continue_after_negotiation_button.visible = true
 	pending_negotiation_result = result
+
+
+func _request_ai_reaction(decision_id: StringName) -> void:
+	var allowed_decisions: Array[String] = []
+	var allowed_targets: Array[String] = []
+	var allowed_mutations: Array[String] = []
+	match decision_id:
+		&"CONFESS":
+			allowed_decisions = ["ALLOW", "PRESERVE"]
+			allowed_targets = ["azhi_audio", "failed_timeline"]
+			allowed_mutations = ["spawn_ghost_audio"]
+		&"BARGAIN":
+			allowed_decisions = ["PRESERVE", "ALLOW"]
+			allowed_targets = ["failed_timeline", "photo_fragment"]
+			allowed_mutations = ["spawn_photo_fragment"]
+		&"CONCEAL":
+			allowed_decisions = ["DISTORT", "REFUSE"]
+			allowed_targets = ["operation_log"]
+			allowed_mutations = ["distort_noncritical_log"]
+		&"FORCE":
+			allowed_decisions = ["REFUSE", "PRESERVE"]
+			allowed_targets = ["ghost_save_slot"]
+			allowed_mutations = [
+				"show_ghost_save_slot",
+				"delay_load_progress",
+			]
+	ai_reaction_label.text = "SAVE_03 正在比对已记录的行为……"
+	ai_reaction_label.visible = true
+	ai_client.call(
+		&"request_save_decision",
+		allowed_decisions,
+		allowed_targets,
+		allowed_mutations
+	)
+
+
+func _on_ai_decision_ready(decision: Dictionary) -> void:
+	var dialogue: Array = decision.get("dialogue", [])
+	var lines: PackedStringArray = []
+	for line: Variant in dialogue:
+		lines.append(String(line))
+	ai_reaction_label.text = "SAVE_03：%s" % "\n".join(lines)
+	ai_reaction_label.visible = true
 
 
 func _on_continue_after_negotiation() -> void:

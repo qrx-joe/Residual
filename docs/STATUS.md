@@ -9,7 +9,7 @@
 
 ## 当前阶段
 
-`MILESTONE_3_T3_2_COMPLETE`
+`MILESTONE_3_COMPLETE`
 
 ## 已完成
 
@@ -38,10 +38,11 @@
 - [x] T2.5 最终证据和结局
 - [x] T3.1 后端骨架
 - [x] T3.2 RouterBase 适配器
+- [x] T3.3 Godot AIClient
 
 ## 下一步
 
-- [ ] T3.3 Godot AIClient
+- [ ] T4.1 SAVE_03 核心
 
 ## 当前风险
 
