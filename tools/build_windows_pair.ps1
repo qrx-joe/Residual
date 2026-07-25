@@ -29,6 +29,7 @@ New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
 $pckPath = Join-Path $outputPath "RESIDUAL.pck"
 $exePath = Join-Path $outputPath "RESIDUAL.exe"
 $readmePath = Join-Path $outputPath "README.txt"
+$demoLauncherPath = Join-Path $outputPath "RESIDUAL-DEMO.cmd"
 $runtimeLogPath = Join-Path $outputPath "runtime-validation.log"
 
 & $GodotConsolePath `
@@ -43,6 +44,12 @@ Copy-Item -LiteralPath $GodotGuiPath -Destination $exePath -Force
 Copy-Item `
     -LiteralPath (Join-Path $projectRoot "packaging\windows\README.txt") `
     -Destination $readmePath `
+    -Force
+Copy-Item `
+    -LiteralPath (
+        Join-Path $projectRoot "packaging\windows\RESIDUAL-DEMO.cmd"
+    ) `
+    -Destination $demoLauncherPath `
     -Force
 
 $previousErrorActionPreference = $ErrorActionPreference
@@ -72,7 +79,12 @@ if (Test-Path -LiteralPath $archivePath -PathType Leaf) {
     Remove-Item -LiteralPath $archivePath -Force
 }
 Compress-Archive `
-    -LiteralPath @($exePath, $pckPath, $readmePath) `
+    -LiteralPath @(
+        $exePath,
+        $pckPath,
+        $readmePath,
+        $demoLauncherPath
+    ) `
     -DestinationPath $archivePath `
     -CompressionLevel Optimal
 

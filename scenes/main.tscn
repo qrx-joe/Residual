@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
@@ -19,6 +19,7 @@
 [ext_resource type="Texture2D" path="res://assets/2d/icons/backup_chip.png" id="17_chip"]
 [ext_resource type="Texture2D" path="res://assets/2d/icons/storage_device.png" id="18_storage"]
 [ext_resource type="Script" path="res://scripts/audio/audio_controller.gd" id="19_audio"]
+[ext_resource type="Script" path="res://scripts/managers/demo_state_manager.gd" id="20_demo"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
 bg_color = Color(0.105, 0.133, 0.192, 0.84)
@@ -147,6 +148,10 @@ script = ExtResource("12_ai_client")
 unique_name_in_owner = true
 script = ExtResource("19_audio")
 
+[node name="DemoStateManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("20_demo")
+
 [node name="Background" type="TextureRect" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
@@ -246,6 +251,31 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(76, 34)
 layout_mode = 2
 text = "静音"
+
+[node name="DemoControls" type="HBoxContainer" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="DemoLabel" type="Label" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header/DemoControls"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.63, 0.48, 1)
+theme_override_font_sizes/font_size = 12
+text = "DEMO"
+vertical_alignment = 1
+
+[node name="DemoLoopTwoButton" type="Button" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header/DemoControls"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(86, 34)
+layout_mode = 2
+text = "LOOP 2"
+
+[node name="DemoForceButton" type="Button" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header/DemoControls"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 34)
+layout_mode = 2
+text = "FORCE"
 
 [node name="LoopStatus" type="VBoxContainer" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header"]
 layout_mode = 2

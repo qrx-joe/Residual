@@ -4,3 +4,4 @@ RESIDUAL / SAVE_03
 2. Double-click RESIDUAL.exe to start.
 3. The complete game loop works offline; RouterBase is optional.
 4. Use the AUDIO controls in the top bar to adjust volume or mute sound.
+5. Double-click RESIDUAL-DEMO.cmd for the four-minute presentation mode.

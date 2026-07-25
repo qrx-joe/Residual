@@ -25,3 +25,7 @@ func _ready() -> void:
 			0.1,
 			5.0
 		)
+	demo_mode = (
+		OS.get_environment("RESIDUAL_DEMO_MODE") == "1"
+		or "--demo" in OS.get_cmdline_user_args()
+	)

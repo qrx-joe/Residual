@@ -34,6 +34,9 @@ const STORAGE_DEVICE_TEXTURE: Texture2D = preload(
 @onready var document_close_button: Button = %DocumentCloseButton
 @onready var volume_slider: HSlider = %VolumeSlider
 @onready var mute_button: Button = %MuteButton
+@onready var demo_controls: HBoxContainer = %DemoControls
+@onready var demo_loop_two_button: Button = %DemoLoopTwoButton
+@onready var demo_force_button: Button = %DemoForceButton
 @onready var force_overwrite_button: Button = %ForceOverwriteButton
 @onready var overwrite_overlay: Control = %OverwriteOverlay
 @onready var overwrite_progress: ProgressBar = %OverwriteProgress
@@ -84,6 +87,7 @@ const STORAGE_DEVICE_TEXTURE: Texture2D = preload(
 @onready var ending_manager: Node = %EndingManager
 @onready var ai_client: Node = %AIClient
 @onready var audio_controller: Node = %AudioController
+@onready var demo_state_manager: Node = %DemoStateManager
 @onready var save_data: Node = get_node("/root/SaveData")
 @onready var investigation_areas: Array[Button] = [
 	%PhoneArea,
@@ -107,6 +111,8 @@ func _ready() -> void:
 	document_close_button.pressed.connect(_on_document_close_pressed)
 	volume_slider.value_changed.connect(_on_volume_changed)
 	mute_button.pressed.connect(_on_mute_pressed)
+	demo_loop_two_button.pressed.connect(_on_demo_loop_two_pressed)
+	demo_force_button.pressed.connect(_on_demo_force_pressed)
 	force_overwrite_button.pressed.connect(_on_force_overwrite_pressed)
 	overwrite_continue_button.pressed.connect(_on_overwrite_continue_pressed)
 	delete_audio_choice_button.pressed.connect(
@@ -143,6 +149,9 @@ func _ready() -> void:
 	anomaly_controller.connect(&"overwrite_completed", _on_overwrite_completed)
 
 	var game_state: Node = get_node("/root/GameState")
+	demo_controls.visible = bool(
+		get_node("/root/Config").get("demo_mode")
+	)
 	var initial_loop_index: int = maxi(int(game_state.get("loop_index")), 1)
 	loop_manager.call(&"start_loop", initial_loop_index)
 	first_loop_content_manager.call(&"initialize_loop", initial_loop_index)
@@ -163,6 +172,57 @@ func _ready() -> void:
 		"T1.5 smoke: loop %d ready; persistence loaded"
 		% initial_loop_index
 	)
+
+
+func _on_demo_loop_two_pressed() -> void:
+	demo_state_manager.call(&"prepare_loop_two")
+	_restart_demo_loop(2)
+	selection_label.text = "DEMO · 第二轮残留"
+	detail_label.text = "已跳过第一轮重复操作。SAVE_03 已记住删除，幽灵波形可见。"
+	loop_status_label.text = "DEMO · LOOP 2"
+
+
+func _on_demo_force_pressed() -> void:
+	demo_state_manager.call(&"prepare_loop_two")
+	_restart_demo_loop(2)
+	demo_state_manager.call(&"prepare_force_negotiation")
+	_set_interaction_enabled(false)
+	negotiation_options_overlay.visible = true
+	negotiation_result_label.visible = false
+	ai_reaction_label.visible = false
+	continue_after_negotiation_button.visible = false
+	for button: Button in _get_negotiation_buttons():
+		button.disabled = false
+	selection_label.text = "DEMO · SAVE_03 谈判"
+	detail_label.text = "选择强制覆盖，展示固定的 99% 倒退与幽灵存档。"
+	loop_status_label.text = "DEMO · SAVE NEGOTIATION"
+	_refresh_residual_presentation()
+
+
+func _restart_demo_loop(loop_index: int) -> void:
+	_reset_demo_overlays()
+	loop_manager.call(&"start_loop", loop_index)
+	first_loop_content_manager.call(&"initialize_loop", loop_index)
+	second_loop_content_manager.call(&"initialize_loop", loop_index)
+	third_loop_content_manager.call(&"initialize_loop", loop_index)
+	residual_data_manager.call(&"prepare_loop", loop_index)
+	save_data.call(&"create_world_snapshot")
+	crisis_label.visible = false
+	_set_interaction_enabled(true)
+	_refresh_residual_presentation()
+
+
+func _reset_demo_overlays() -> void:
+	for overlay: Control in [
+		document_overlay,
+		first_loop_decision_overlay,
+		negotiation_entry_overlay,
+		negotiation_options_overlay,
+		overwrite_overlay,
+		final_reveal_overlay,
+		ending_overlay,
+	]:
+		overlay.visible = false
 
 
 func _on_area_selected(
