@@ -5,11 +5,14 @@
  * 用于验证 API Key 配置和网络连接
  */
 
+import "dotenv/config";
 import { loadServerConfig } from './dist/config.js';
 import https from 'https';
 
 async function testRouterBaseConnection() {
   console.log('🔍 测试 RouterBase 连接...\n');
+
+  const config = loadServerConfig(process.env);
 
   // 检查环境变量
   console.log('📋 配置检查:');
@@ -103,7 +106,7 @@ async function testRouterBaseConnection() {
 }
 
 // 运行测试
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   testRouterBaseConnection()
     .then(() => {
       console.log('\n✨ 测试完成!');
@@ -116,4 +119,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { testRouterBaseConnection };
+export { testRouterBaseConnection };
