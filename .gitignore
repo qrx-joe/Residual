@@ -22,3 +22,6 @@ dist/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Uncurated local source artwork
+photo/
