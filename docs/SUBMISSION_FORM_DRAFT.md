@@ -1,7 +1,8 @@
 # Vibe Jams #01 飞书提交草稿
 
-> 对应作者：乔瑞雪  
-> 状态：内容已准备，尚未在飞书填写或上传
+> 对应作者：乔瑞雪
+>
+> 状态：内容与体验链接已准备，尚未在飞书填写
 
 ## 可直接填写
 
@@ -17,7 +18,7 @@
 
 https://github.com/qrx-joe/Residual
 
-注意：仓库当前为 `PRIVATE`。在提交前必须公开仓库，或改填一个评委确实有权限访问的代码链接。
+仓库当前为公开状态。
 
 ### 作品展示图
 
@@ -31,20 +32,22 @@ https://github.com/qrx-joe/Residual
 
 注意：两张图均来自真实 Windows 构建，不是概念图；但当前截图带有 `DEBUG` 窗口标题且清晰度偏低。若时间允许，应重新截取一张 16:9、高分辨率、无调试字样的实机主界面图。
 
-## 尚缺内容
+## 作品体验链接
 
-### 作品体验链接
+Release 页面：
 
-当前没有可公开访问的下载链接。
+https://github.com/qrx-joe/Residual/releases/tag/v0.1.0-jam
 
-已准备的上传包：
+Windows ZIP 直链：
+
+https://github.com/qrx-joe/Residual/releases/download/v0.1.0-jam/RESIDUAL-Windows.zip
+
+已发布的上传包：
 
 - 文件：`build/RESIDUAL-Windows.zip`
 - 大小：84,413,100 bytes
 - SHA-256：`59BEB1BCFDEA49D21C298287DDCAE80D3D34CEE0709E92E6DBA434EA326903AF`
 - 压缩包内容：`RESIDUAL.exe`、`RESIDUAL.pck`、`README.txt`
-
-建议将该 ZIP 上传至 GitHub Release、飞书云盘、Google Drive 或其他无需额外申请权限的公开下载位置，再把直达页面链接填入“作品体验链接”。
 
 ## 飞书中已有内容
 
@@ -56,8 +59,8 @@ https://github.com/qrx-joe/Residual
 
 ## 提交前检查
 
-- [ ] 作品体验链接可在未登录状态下打开并下载
-- [ ] GitHub 仓库已公开，或评委已获得访问权限
+- [x] 作品体验链接可在未登录状态下打开并下载
+- [x] GitHub 仓库已公开
 - [ ] 展示图最终版本已确认
 - [ ] 下载 ZIP 后可正常解压
 - [ ] `RESIDUAL.exe` 与 `RESIDUAL.pck` 位于同一目录
