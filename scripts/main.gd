@@ -1,5 +1,21 @@
 extends Control
 
+const AZHI_LETTER_TEXTURE: Texture2D = preload(
+	"res://assets/2d/documents/azhi_letter.png"
+)
+const DATA_PURGE_TEXTURE: Texture2D = preload(
+	"res://assets/2d/documents/data_purge_notice.png"
+)
+const GHOST_WAVEFORM_TEXTURE: Texture2D = preload(
+	"res://assets/2d/effects/ghost_waveform.png"
+)
+const BACKUP_CHIP_TEXTURE: Texture2D = preload(
+	"res://assets/2d/icons/backup_chip.png"
+)
+const STORAGE_DEVICE_TEXTURE: Texture2D = preload(
+	"res://assets/2d/icons/storage_device.png"
+)
+
 @onready var selection_label: Label = %SelectionLabel
 @onready var detail_label: Label = %DetailLabel
 @onready var time_label: Label = %TimeLabel
@@ -10,7 +26,12 @@ extends Control
 @onready var load_button: Button = %LoadButton
 @onready var delete_recording_button: Button = %DeleteRecordingButton
 @onready var ghost_waveform_label: Label = %GhostWaveformLabel
+@onready var ghost_waveform_texture: TextureRect = %GhostWaveformTexture
 @onready var ghost_evidence_header_label: Label = %GhostEvidenceHeaderLabel
+@onready var document_overlay: Control = %DocumentOverlay
+@onready var document_title_label: Label = %DocumentTitleLabel
+@onready var document_texture: TextureRect = %DocumentTexture
+@onready var document_close_button: Button = %DocumentCloseButton
 @onready var force_overwrite_button: Button = %ForceOverwriteButton
 @onready var overwrite_overlay: Control = %OverwriteOverlay
 @onready var overwrite_progress: ProgressBar = %OverwriteProgress
@@ -80,6 +101,7 @@ func _ready() -> void:
 	loop_manager.connect(&"loop_timed_out", _on_loop_timed_out)
 	load_button.pressed.connect(_on_load_pressed)
 	delete_recording_button.pressed.connect(_on_delete_recording_pressed)
+	document_close_button.pressed.connect(_on_document_close_pressed)
 	force_overwrite_button.pressed.connect(_on_force_overwrite_pressed)
 	overwrite_continue_button.pressed.connect(_on_overwrite_continue_pressed)
 	delete_audio_choice_button.pressed.connect(
@@ -170,6 +192,7 @@ func _on_area_selected(
 	selection_count += 1
 	selection_label.text = String(action.get("display_name", region_id))
 	detail_label.text = String(action.get("description", ""))
+	_show_action_art(action_id)
 	_update_delete_recording_action(action_id)
 	print("Action selected: %s" % action_id)
 
@@ -240,6 +263,7 @@ func _on_loop_timed_out() -> void:
 	for area: Button in investigation_areas:
 		area.disabled = true
 	load_button.disabled = false
+	_show_document("03:00 · DATA PURGE NOTICE", DATA_PURGE_TEXTURE)
 
 
 func _on_load_pressed() -> void:
@@ -247,6 +271,7 @@ func _on_load_pressed() -> void:
 		return
 
 	load_button.disabled = true
+	document_overlay.visible = false
 	var event_bus: Node = get_node("/root/EventBus")
 	event_bus.emit_signal(&"save_requested", &"LOAD")
 	var restored: bool = bool(save_data.call(&"restore_world_snapshot"))
@@ -522,6 +547,7 @@ func _refresh_residual_presentation() -> void:
 		residual_data_manager.call(&"has_ghost_recording")
 	)
 	ghost_waveform_label.visible = has_ghost_recording
+	ghost_waveform_texture.visible = has_ghost_recording
 	ghost_evidence_header_label.visible = bool(
 		residual_data_manager.call(&"has_ghost_evidence_header")
 	)
@@ -560,6 +586,7 @@ func _maybe_show_final_reveal() -> void:
 	var reveal: Dictionary = ending_manager.call(&"prepare_final_reveal")
 	if not bool(reveal.get("ok", false)):
 		return
+	document_overlay.visible = false
 	_set_interaction_enabled(false)
 	final_reveal_overlay.visible = true
 	var relationship: String = String(reveal.get("relationship", ""))
@@ -619,6 +646,7 @@ func _on_force_overwrite_pressed() -> void:
 	if not started:
 		return
 
+	document_overlay.visible = false
 	_set_interaction_enabled(false)
 	overwrite_overlay.visible = true
 	overwrite_progress.value = 0.0
@@ -687,3 +715,25 @@ func _set_interaction_enabled(enabled: bool) -> void:
 	force_overwrite_button.disabled = (
 		not enabled or not force_overwrite_button.visible
 	)
+
+
+func _show_action_art(action_id: StringName) -> void:
+	match action_id:
+		&"READ_LETTER":
+			_show_document("阿栀 · 未寄出的信", AZHI_LETTER_TEXTURE)
+		&"OPEN_DRAWER", &"QUICK_OPEN_DRAWER":
+			_show_document("离线备份芯片 · PHYSICAL KEY", BACKUP_CHIP_TEXTURE)
+		&"SCAN_COMPUTER", &"QUICK_FIND_EVIDENCE", &"DECRYPT_EVIDENCE":
+			_show_document("EVIDENCE_03 · STORAGE DEVICE", STORAGE_DEVICE_TEXTURE)
+		&"PLAY_AUDIO", &"USE_GHOST_AUDIO", &"USE_PRESERVED_AUDIO":
+			_show_document("阿栀 · GHOST WAVEFORM", GHOST_WAVEFORM_TEXTURE)
+
+
+func _show_document(title: String, texture: Texture2D) -> void:
+	document_title_label.text = title
+	document_texture.texture = texture
+	document_overlay.visible = true
+
+
+func _on_document_close_pressed() -> void:
+	document_overlay.visible = false

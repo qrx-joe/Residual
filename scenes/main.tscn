@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
@@ -12,9 +12,15 @@
 [ext_resource type="Script" path="res://scripts/managers/third_loop_content_manager.gd" id="10_third_loop"]
 [ext_resource type="Script" path="res://scripts/managers/ending_manager.gd" id="11_ending"]
 [ext_resource type="Script" path="res://scripts/ai/ai_client.gd" id="12_ai_client"]
+[ext_resource type="Texture2D" path="res://assets/2d/backgrounds/office_main.png" id="13_office_bg"]
+[ext_resource type="Texture2D" path="res://assets/2d/documents/azhi_letter.png" id="14_letter"]
+[ext_resource type="Texture2D" path="res://assets/2d/documents/data_purge_notice.png" id="15_purge"]
+[ext_resource type="Texture2D" path="res://assets/2d/effects/ghost_waveform.png" id="16_waveform"]
+[ext_resource type="Texture2D" path="res://assets/2d/icons/backup_chip.png" id="17_chip"]
+[ext_resource type="Texture2D" path="res://assets/2d/icons/storage_device.png" id="18_storage"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
-bg_color = Color(0.105, 0.133, 0.192, 0.96)
+bg_color = Color(0.105, 0.133, 0.192, 0.84)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -26,7 +32,7 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxFlat" id="StyleAreaNormal"]
-bg_color = Color(0.07, 0.09, 0.13, 1)
+bg_color = Color(0.07, 0.09, 0.13, 0.68)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -42,7 +48,7 @@ content_margin_right = 18.0
 content_margin_bottom = 18.0
 
 [sub_resource type="StyleBoxFlat" id="StyleAreaHover"]
-bg_color = Color(0.1, 0.16, 0.2, 1)
+bg_color = Color(0.1, 0.16, 0.2, 0.84)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -58,7 +64,7 @@ content_margin_right = 17.0
 content_margin_bottom = 17.0
 
 [sub_resource type="StyleBoxFlat" id="StyleAreaPressed"]
-bg_color = Color(0.16, 0.25, 0.27, 1)
+bg_color = Color(0.16, 0.25, 0.27, 0.92)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -136,14 +142,28 @@ script = ExtResource("12_ai_client")
 
 [node name="HTTPRequest" type="HTTPRequest" parent="AIClient"]
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.067, 0.086, 0.133, 1)
+mouse_filter = 2
+texture = ExtResource("13_office_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundTint" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.025, 0.035, 0.055, 0.34)
 
 [node name="SafeArea" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -249,7 +269,7 @@ text = "深夜办公室 · 选择调查区域"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.64, 0.7, 1)
 theme_override_font_sizes/font_size = 14
-text = "点击区域查看名称。当前为玩法占位，不代表正式美术。"
+text = "电话、终端与上锁抽屉都保留着不同的残留记录。"
 
 [node name="CrisisLabel" type="Label" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin/OfficeWorld"]
 unique_name_in_owner = true
@@ -367,6 +387,15 @@ theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
 theme_override_font_sizes/font_size = 15
 text = "GHOST WAVEFORM  ▁▃▆▂▅▇▃···  +3s"
 
+[node name="GhostWaveformTexture" type="TextureRect" parent="SafeArea/MainLayout/FeedbackPanel/FeedbackMargin/Feedback"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+texture = ExtResource("16_waveform")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="GhostEvidenceHeaderLabel" type="Label" parent="SafeArea/MainLayout/FeedbackPanel/FeedbackMargin/Feedback"]
 unique_name_in_owner = true
 visible = false
@@ -458,6 +487,64 @@ custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 disabled = true
 text = "读取 SAVE_01"
+
+[node name="DocumentOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.022, 0.035, 0.94)
+
+[node name="DocumentCenter" type="CenterContainer" parent="DocumentOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DocumentPanel" type="PanelContainer" parent="DocumentOverlay/DocumentCenter"]
+custom_minimum_size = Vector2(560, 680)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="DocumentMargin" type="MarginContainer" parent="DocumentOverlay/DocumentCenter/DocumentPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="DocumentLayout" type="VBoxContainer" parent="DocumentOverlay/DocumentCenter/DocumentPanel/DocumentMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DocumentTitleLabel" type="Label" parent="DocumentOverlay/DocumentCenter/DocumentPanel/DocumentMargin/DocumentLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+text = "DOCUMENT"
+horizontal_alignment = 1
+
+[node name="DocumentTexture" type="TextureRect" parent="DocumentOverlay/DocumentCenter/DocumentPanel/DocumentMargin/DocumentLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(480, 560)
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("14_letter")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DocumentCloseButton" type="Button" parent="DocumentOverlay/DocumentCenter/DocumentPanel/DocumentMargin/DocumentLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "关闭文档 / RETURN"
 
 [node name="OverwriteOverlay" type="ColorRect" parent="."]
 unique_name_in_owner = true
