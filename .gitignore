@@ -1,0 +1,23 @@
+# Godot
+.godot/
+*.tmp
+*.import
+
+# Builds
+build/
+
+# Node.js
+node_modules/
+coverage/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,53 @@
+extends Node
+
+signal ghost_recording_spawned
+
+
+func record_recording_deletion() -> void:
+	var game_state: Node = get_node("/root/GameState")
+	var residual_state: Dictionary = game_state.get("residual_state")
+	var deletion_count: int = int(
+		residual_state.get(&"recording_deletion_count", 0)
+	) + 1
+	residual_state[&"recording_deleted"] = true
+	residual_state[&"recording_deletion_count"] = deletion_count
+
+	var player_knowledge: Dictionary = game_state.get("player_knowledge")
+	player_knowledge[&"deleted_recording_once"] = true
+
+	var history: Array = game_state.get("history")
+	history.append({
+		"event": "DELETE_RECORDING",
+		"loop_index": int(game_state.get("loop_index")),
+		"deletion_count": deletion_count,
+	})
+
+
+func prepare_loop(loop_index: int) -> bool:
+	if loop_index < 2 or not has_recording_been_deleted():
+		return false
+
+	var game_state: Node = get_node("/root/GameState")
+	var residual_state: Dictionary = game_state.get("residual_state")
+	if bool(residual_state.get(&"ghost_recording", false)):
+		return true
+
+	residual_state[&"ghost_recording"] = true
+	get_node("/root/EventBus").emit_signal(
+		&"residual_data_spawned",
+		&"GHOST_RECORDING"
+	)
+	ghost_recording_spawned.emit()
+	return true
+
+
+func has_recording_been_deleted() -> bool:
+	var game_state: Node = get_node("/root/GameState")
+	var residual_state: Dictionary = game_state.get("residual_state")
+	return bool(residual_state.get(&"recording_deleted", false))
+
+
+func has_ghost_recording() -> bool:
+	var game_state: Node = get_node("/root/GameState")
+	var residual_state: Dictionary = game_state.get("residual_state")
+	return bool(residual_state.get(&"ghost_recording", false))

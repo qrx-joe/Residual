@@ -1,0 +1,10 @@
+{
+  "name": "residual",
+  "version": "0.1.0",
+  "private": true,
+  "description": "《残留项》RESIDUAL / SAVE_03",
+  "engines": {
+    "node": "24.13.0",
+    "npm": "11.6.2"
+  }
+}

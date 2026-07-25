@@ -1,0 +1,377 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
+[ext_resource type="Script" path="res://scripts/managers/loop_manager.gd" id="3_loop"]
+[ext_resource type="Script" path="res://scripts/managers/residual_data_manager.gd" id="4_residual"]
+
+[sub_resource type="StyleBoxFlat" id="StylePanel"]
+bg_color = Color(0.105, 0.133, 0.192, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.28, 0.38, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleAreaNormal"]
+bg_color = Color(0.07, 0.09, 0.13, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.29, 0.4, 0.51, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 18.0
+content_margin_top = 18.0
+content_margin_right = 18.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="StyleAreaHover"]
+bg_color = Color(0.1, 0.16, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.56, 0.83, 0.85, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 17.0
+content_margin_top = 17.0
+content_margin_right = 17.0
+content_margin_bottom = 17.0
+
+[sub_resource type="StyleBoxFlat" id="StyleAreaPressed"]
+bg_color = Color(0.16, 0.25, 0.27, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.56, 0.83, 0.85, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 17.0
+content_margin_top = 19.0
+content_margin_right = 17.0
+content_margin_bottom = 15.0
+
+[sub_resource type="StyleBoxFlat" id="StyleAreaFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.63, 0.48, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="LoopManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_loop")
+
+[node name="ResidualDataManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("4_residual")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.067, 0.086, 0.133, 1)
+
+[node name="SafeArea" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="MainLayout" type="VBoxContainer" parent="SafeArea"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="HeaderPanel" type="PanelContainer" parent="SafeArea/MainLayout"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="HeaderMargin" type="MarginContainer" parent="SafeArea/MainLayout/HeaderPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 12
+
+[node name="Header" type="HBoxContainer" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin"]
+layout_mode = 2
+
+[node name="Identity" type="VBoxContainer" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Title" type="Label" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header/Identity"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 24
+text = "RESIDUAL / SAVE_03"
+
+[node name="Subtitle" type="Label" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header/Identity"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "OFFICE 03 · LOCAL INVESTIGATION"
+
+[node name="Spacer" type="Control" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LoopStatus" type="VBoxContainer" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="TimeLabel" type="Label" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header/LoopStatus"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 22
+text = "02:47"
+horizontal_alignment = 2
+
+[node name="ActionsLabel" type="Label" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header/LoopStatus"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "ACTIONS 4 / 4"
+horizontal_alignment = 2
+
+[node name="LoopStatusLabel" type="Label" parent="SafeArea/MainLayout/HeaderPanel/HeaderMargin/Header/LoopStatus"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.36, 0.36, 1)
+theme_override_font_sizes/font_size = 12
+text = "DATA PURGE PENDING"
+horizontal_alignment = 2
+
+[node name="OfficePanel" type="PanelContainer" parent="SafeArea/MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="OfficeMargin" type="MarginContainer" parent="SafeArea/MainLayout/OfficePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="OfficeWorld" type="VBoxContainer" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="RoomTitle" type="Label" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin/OfficeWorld"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 20
+text = "深夜办公室 · 选择调查区域"
+
+[node name="RoomHint" type="Label" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin/OfficeWorld"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "点击区域查看名称。当前为玩法占位，不代表正式美术。"
+
+[node name="InvestigationGrid" type="GridContainer" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin/OfficeWorld"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 14
+columns = 3
+
+[node name="PhoneArea" type="Button" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin/OfficeWorld/InvestigationGrid" groups=["investigation_area"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_colors/font_hover_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleAreaNormal")
+theme_override_styles/hover = SubResource("StyleAreaHover")
+theme_override_styles/pressed = SubResource("StyleAreaPressed")
+theme_override_styles/focus = SubResource("StyleAreaFocus")
+text = "01\n电话与照片\nVOICE / PHOTO"
+script = ExtResource("2_area")
+region_id = &"PHONE"
+display_name = "电话与照片"
+description = "老式电话、残缺录音与被撕掉一角的合照。"
+
+[node name="ComputerArea" type="Button" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin/OfficeWorld/InvestigationGrid" groups=["investigation_area"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_colors/font_hover_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleAreaNormal")
+theme_override_styles/hover = SubResource("StyleAreaHover")
+theme_override_styles/pressed = SubResource("StyleAreaPressed")
+theme_override_styles/focus = SubResource("StyleAreaFocus")
+text = "02\n电脑与 SAVE_03\nTERMINAL / CORE"
+script = ExtResource("2_area")
+region_id = &"COMPUTER"
+display_name = "电脑与 SAVE_03"
+description = "加密证据包、操作日志与仍在待机的存档核心。"
+
+[node name="DrawerArea" type="Button" parent="SafeArea/MainLayout/OfficePanel/OfficeMargin/OfficeWorld/InvestigationGrid" groups=["investigation_area"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_colors/font_hover_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleAreaNormal")
+theme_override_styles/hover = SubResource("StyleAreaHover")
+theme_override_styles/pressed = SubResource("StyleAreaPressed")
+theme_override_styles/focus = SubResource("StyleAreaFocus")
+text = "03\n信件与抽屉\nLETTER / DRAWER"
+script = ExtResource("2_area")
+region_id = &"DRAWER"
+display_name = "信件与抽屉"
+description = "未寄出的信、上锁抽屉与一枚离线备份芯片。"
+
+[node name="FeedbackPanel" type="PanelContainer" parent="SafeArea/MainLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 132)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="FeedbackMargin" type="MarginContainer" parent="SafeArea/MainLayout/FeedbackPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 12
+
+[node name="Feedback" type="VBoxContainer" parent="SafeArea/MainLayout/FeedbackPanel/FeedbackMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="FeedbackTitle" type="Label" parent="SafeArea/MainLayout/FeedbackPanel/FeedbackMargin/Feedback"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "CURRENT INVESTIGATION"
+
+[node name="SelectionLabel" type="Label" parent="SafeArea/MainLayout/FeedbackPanel/FeedbackMargin/Feedback"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 18
+text = "尚未选择"
+
+[node name="DetailLabel" type="Label" parent="SafeArea/MainLayout/FeedbackPanel/FeedbackMargin/Feedback"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 14
+text = "电话、电脑与抽屉都在等待调查。"
+autowrap_mode = 2
+
+[node name="GhostWaveformLabel" type="Label" parent="SafeArea/MainLayout/FeedbackPanel/FeedbackMargin/Feedback"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 15
+text = "GHOST WAVEFORM  ▁▃▆▂▅▇▃···  +3s"
+
+[node name="SavePanel" type="PanelContainer" parent="SafeArea/MainLayout"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="SaveMargin" type="MarginContainer" parent="SafeArea/MainLayout/SavePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 8
+
+[node name="SaveRow" type="HBoxContainer" parent="SafeArea/MainLayout/SavePanel/SaveMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SlotIdentity" type="VBoxContainer" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="SlotName" type="Label" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow/SlotIdentity"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 16
+text = "SAVE_01"
+
+[node name="SlotTime" type="Label" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow/SlotIdentity"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "02:47"
+
+[node name="SaveStatusLabel" type="Label" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 16
+text = "已保存"
+vertical_alignment = 1
+
+[node name="DeleteRecordingButton" type="Button" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(220, 40)
+layout_mode = 2
+text = "删除本地录音缓存"
+
+[node name="SaveSpacer" type="Control" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LoadButton" type="Button" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+disabled = true
+text = "读取 SAVE_01"
