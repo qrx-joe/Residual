@@ -49,7 +49,7 @@
 
 - [ ] 下载并检查 Tripo3D GLB；仅在不影响提交时接入
 - [x] 准备飞书作品信息填写草稿
-- [ ] 上传 `build/RESIDUAL-Windows.zip`
+- [x] 上传 `build/RESIDUAL-Windows.zip` 至 GitHub Release `v0.1.0-jam`
 - [ ] 由用户完成活动页面最终提交
 
 ## 当前风险
@@ -58,7 +58,6 @@
 - Tripo3D 模型正在生成，正式 GLB 尚未导入
 - 阿栀正式配音来源尚未确定
 - 当前 Windows 包使用同版本 Godot 编辑器运行二进制与 PCK 配对，体积大于标准模板导出
-- GitHub 仓库当前为私有，提交前需要公开或提供评委可访问的代码链接
 
 ## 范围冻结
 
