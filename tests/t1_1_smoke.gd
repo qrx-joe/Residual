@@ -43,10 +43,9 @@ func _run() -> void:
 		await create_timer(0.35).timeout
 
 	main.get_node("%AudioController").call(&"stop_all")
-	await process_frame
+	await create_timer(0.2).timeout
 	main.free()
-	await process_frame
-	await process_frame
+	await create_timer(0.2).timeout
 	print("T1.1 smoke: 3 areas visible at 1366x768; rapid clicks locked")
 	quit(0)
 

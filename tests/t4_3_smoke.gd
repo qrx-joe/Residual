@@ -63,13 +63,13 @@ func _init() -> void:
 
 	var main_audio: Node = main.get_node("%AudioController")
 	main_audio.call(&"stop_all")
-	await process_frame
+	controller.call(&"stop_all")
+	await create_timer(0.2).timeout
 	main.free()
 	controller.free()
 	AudioServer.set_bus_volume_db(0, original_volume_db)
 	AudioServer.set_bus_mute(0, original_muted)
-	await process_frame
-	await process_frame
+	await create_timer(0.2).timeout
 	print("T4.3 smoke: ambience, voice, cues, volume, and mute passed")
 	quit()
 
