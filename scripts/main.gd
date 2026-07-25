@@ -37,13 +37,27 @@ extends Control
 @onready var continue_after_negotiation_button: Button = (
 	%ContinueAfterNegotiationButton
 )
+@onready var final_reveal_overlay: Control = %FinalRevealOverlay
+@onready var relationship_label: Label = %RelationshipLabel
+@onready var final_reveal_text: Label = %FinalRevealText
+@onready var azhi_final_message: Label = %AzhiFinalMessage
+@onready var public_truth_button: Button = %PublicTruthButton
+@onready var preserve_memory_button: Button = %PreserveMemoryButton
+@onready var ending_overlay: Control = %EndingOverlay
+@onready var ending_title_label: Label = %EndingTitleLabel
+@onready var ending_detail_label: Label = %EndingDetailLabel
+@onready var ending_dialogue_label: Label = %EndingDialogueLabel
+@onready var ending_save_label: Label = %EndingSaveLabel
+@onready var slot_name: Label = %SlotName
 @onready var loop_manager: Node = %LoopManager
 @onready var residual_data_manager: Node = %ResidualDataManager
 @onready var anomaly_controller: Node = %AnomalyController
 @onready var action_manager: Node = %ActionManager
 @onready var first_loop_content_manager: Node = %FirstLoopContentManager
 @onready var second_loop_content_manager: Node = %SecondLoopContentManager
+@onready var third_loop_content_manager: Node = %ThirdLoopContentManager
 @onready var save_will_manager: Node = %SaveWillManager
+@onready var ending_manager: Node = %EndingManager
 @onready var save_data: Node = get_node("/root/SaveData")
 @onready var investigation_areas: Array[Button] = [
 	%PhoneArea,
@@ -88,6 +102,12 @@ func _ready() -> void:
 	continue_after_negotiation_button.pressed.connect(
 		_on_continue_after_negotiation
 	)
+	public_truth_button.pressed.connect(
+		_on_ending_selected.bind(&"PUBLIC_TRUTH")
+	)
+	preserve_memory_button.pressed.connect(
+		_on_ending_selected.bind(&"PRESERVE_MEMORY")
+	)
 	anomaly_controller.connect(&"progress_changed", _on_overwrite_progress_changed)
 	anomaly_controller.connect(&"stage_changed", _on_overwrite_stage_changed)
 	anomaly_controller.connect(&"overwrite_completed", _on_overwrite_completed)
@@ -97,6 +117,7 @@ func _ready() -> void:
 	loop_manager.call(&"start_loop", initial_loop_index)
 	first_loop_content_manager.call(&"initialize_loop", initial_loop_index)
 	second_loop_content_manager.call(&"initialize_loop", initial_loop_index)
+	third_loop_content_manager.call(&"initialize_loop", initial_loop_index)
 	residual_data_manager.call(&"prepare_loop", initial_loop_index)
 	save_data.call(&"create_world_snapshot")
 	crisis_label.visible = initial_loop_index == 1
@@ -126,6 +147,7 @@ func _on_area_selected(
 		detail_label.text = "已检查当前时间线中可用的内容。"
 		return
 	var action_id: StringName = StringName(String(action.get("id", "")))
+	var action_cost: int = int(action.get("cost", 1))
 	var action_accepted: bool = bool(
 		loop_manager.call(&"request_action", action_id)
 	)
@@ -157,8 +179,12 @@ func _on_area_selected(
 	)
 	feedback_tween.tween_property(feedback_panel, "modulate", Color.WHITE, 0.18)
 	await feedback_tween.finished
-	loop_manager.call(&"complete_action", action_id)
+	if action_cost > 0:
+		loop_manager.call(&"complete_action", action_id)
+	else:
+		loop_manager.call(&"cancel_action", action_id)
 	_maybe_offer_first_loop_choice()
+	_maybe_show_final_reveal()
 
 
 func _on_loop_state_changed(
@@ -231,6 +257,7 @@ func _on_load_pressed() -> void:
 	loop_manager.call(&"start_loop", next_loop_index)
 	first_loop_content_manager.call(&"initialize_loop", next_loop_index)
 	second_loop_content_manager.call(&"initialize_loop", next_loop_index)
+	third_loop_content_manager.call(&"initialize_loop", next_loop_index)
 	residual_data_manager.call(&"prepare_loop", next_loop_index)
 	for area: Button in investigation_areas:
 		area.disabled = false
@@ -458,8 +485,83 @@ func _refresh_residual_presentation() -> void:
 		anomaly_controller.call(&"has_completed_overwrite")
 	)
 	ghost_save_slot.visible = has_ghost_save
-	force_overwrite_button.visible = has_ghost_recording and not has_ghost_save
+	var game_state: Node = get_node("/root/GameState")
+	var player_knowledge: Dictionary = game_state.get("player_knowledge")
+	var negotiation_complete: bool = (
+		not String(
+			player_knowledge.get(&"negotiation_choice", "")
+		).is_empty()
+	)
+	force_overwrite_button.visible = (
+		has_ghost_recording
+		and not has_ghost_save
+		and not negotiation_complete
+		and int(game_state.get("loop_index")) < 3
+	)
 	force_overwrite_button.disabled = not force_overwrite_button.visible
+
+
+func _maybe_show_final_reveal() -> void:
+	if final_reveal_overlay.visible or ending_overlay.visible:
+		return
+	if not bool(
+		third_loop_content_manager.call(&"is_final_evidence_decrypted")
+	):
+		return
+
+	var reveal: Dictionary = ending_manager.call(&"prepare_final_reveal")
+	if not bool(reveal.get("ok", false)):
+		return
+	_set_interaction_enabled(false)
+	final_reveal_overlay.visible = true
+	var relationship: String = String(reveal.get("relationship", ""))
+	var relationship_names: Dictionary = {
+		"COOPERATIVE": "合作型",
+		"TRANSACTIONAL": "交易型",
+		"ADVERSARIAL": "对抗型",
+	}
+	relationship_label.text = "%s · %s" % [
+		String(relationship_names.get(relationship, "交易型")),
+		String(reveal.get("relationship_hint", "")),
+	]
+	final_reveal_text.text = String(reveal.get("reveal", ""))
+	azhi_final_message.text = String(reveal.get("azhi_message", ""))
+	if relationship == "ADVERSARIAL":
+		public_truth_button.text = "覆盖并导出\n公开真相"
+		preserve_memory_button.text = "停止覆盖\n保留记忆"
+	else:
+		public_truth_button.text = "导出并清空\n公开真相"
+		preserve_memory_button.text = "终止完整导出\n保留记忆"
+	public_truth_button.disabled = false
+	preserve_memory_button.disabled = false
+
+
+func _on_ending_selected(ending_id: StringName) -> void:
+	if not final_reveal_overlay.visible:
+		return
+	public_truth_button.disabled = true
+	preserve_memory_button.disabled = true
+	var result: Dictionary = ending_manager.call(&"resolve_ending", ending_id)
+	if not bool(result.get("ok", false)):
+		detail_label.text = String(result.get("error", "ENDING_ERROR"))
+		public_truth_button.disabled = false
+		preserve_memory_button.disabled = false
+		return
+
+	var dialogue: Array = result.get("dialogue", [])
+	final_reveal_overlay.visible = false
+	ending_title_label.text = String(result.get("title", ""))
+	ending_detail_label.text = String(result.get("detail", ""))
+	ending_dialogue_label.text = "\n".join(
+		dialogue.map(func(line: Variant) -> String: return String(line))
+	)
+	var save_name: String = String(result.get("save_name", "SAVE_01"))
+	var save_status: String = String(result.get("save_status", ""))
+	slot_name.text = save_name
+	save_status_label.text = save_status
+	ending_save_label.text = "%s · %s" % [save_name, save_status]
+	ending_overlay.visible = true
+	save_data.call(&"save_persistent_state")
 
 
 func _on_force_overwrite_pressed() -> void:

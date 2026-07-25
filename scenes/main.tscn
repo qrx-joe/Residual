@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://scripts/managers/first_loop_content_manager.gd" id="7_first_loop"]
 [ext_resource type="Script" path="res://scripts/managers/second_loop_content_manager.gd" id="8_second_loop"]
 [ext_resource type="Script" path="res://scripts/managers/save_will_manager.gd" id="9_save_will"]
+[ext_resource type="Script" path="res://scripts/managers/third_loop_content_manager.gd" id="10_third_loop"]
+[ext_resource type="Script" path="res://scripts/managers/ending_manager.gd" id="11_ending"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
 bg_color = Color(0.105, 0.133, 0.192, 0.96)
@@ -118,6 +120,14 @@ script = ExtResource("8_second_loop")
 [node name="SaveWillManager" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("9_save_will")
+
+[node name="ThirdLoopContentManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("10_third_loop")
+
+[node name="EndingManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("11_ending")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -379,6 +389,7 @@ layout_mode = 2
 theme_override_constants/separation = 0
 
 [node name="SlotName" type="Label" parent="SafeArea/MainLayout/SavePanel/SaveMargin/SaveRow/SlotIdentity"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
 theme_override_font_sizes/font_size = 16
@@ -716,3 +727,155 @@ visible = false
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 text = "保存决定并读档"
+
+[node name="FinalRevealOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.025, 0.035, 0.055, 0.97)
+
+[node name="FinalCenter" type="CenterContainer" parent="FinalRevealOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FinalPanel" type="PanelContainer" parent="FinalRevealOverlay/FinalCenter"]
+custom_minimum_size = Vector2(760, 520)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="FinalMargin" type="MarginContainer" parent="FinalRevealOverlay/FinalCenter/FinalPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 24
+
+[node name="FinalLayout" type="VBoxContainer" parent="FinalRevealOverlay/FinalCenter/FinalPanel/FinalMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="FinalTitle" type="Label" parent="FinalRevealOverlay/FinalCenter/FinalPanel/FinalMargin/FinalLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 24
+text = "最终证据已解密"
+horizontal_alignment = 1
+
+[node name="RelationshipLabel" type="Label" parent="FinalRevealOverlay/FinalCenter/FinalPanel/FinalMargin/FinalLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.63, 0.48, 1)
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+
+[node name="FinalRevealText" type="Label" parent="FinalRevealOverlay/FinalCenter/FinalPanel/FinalMargin/FinalLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+
+[node name="AzhiFinalMessage" type="Label" parent="FinalRevealOverlay/FinalCenter/FinalPanel/FinalMargin/FinalLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="EndingCostLabel" type="Label" parent="FinalRevealOverlay/FinalCenter/FinalPanel/FinalMargin/FinalLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.36, 0.36, 1)
+theme_override_font_sizes/font_size = 14
+text = "导出会清空 SAVE_03；保留记忆则失去完整可验证证据链。"
+horizontal_alignment = 1
+
+[node name="EndingButtons" type="HBoxContainer" parent="FinalRevealOverlay/FinalCenter/FinalPanel/FinalMargin/FinalLayout"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="PublicTruthButton" type="Button" parent="FinalRevealOverlay/FinalCenter/FinalPanel/FinalMargin/FinalLayout/EndingButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 52)
+layout_mode = 2
+text = "导出并清空\n公开真相"
+
+[node name="PreserveMemoryButton" type="Button" parent="FinalRevealOverlay/FinalCenter/FinalPanel/FinalMargin/FinalLayout/EndingButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 52)
+layout_mode = 2
+text = "终止完整导出\n保留记忆"
+
+[node name="EndingOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.025, 0.035, 0.055, 0.98)
+
+[node name="EndingCenter" type="CenterContainer" parent="EndingOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="EndingPanel" type="PanelContainer" parent="EndingOverlay/EndingCenter"]
+custom_minimum_size = Vector2(660, 330)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="EndingMargin" type="MarginContainer" parent="EndingOverlay/EndingCenter/EndingPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="EndingLayout" type="VBoxContainer" parent="EndingOverlay/EndingCenter/EndingPanel/EndingMargin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="EndingTitleLabel" type="Label" parent="EndingOverlay/EndingCenter/EndingPanel/EndingMargin/EndingLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 26
+horizontal_alignment = 1
+
+[node name="EndingDetailLabel" type="Label" parent="EndingOverlay/EndingCenter/EndingPanel/EndingMargin/EndingLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+
+[node name="EndingDialogueLabel" type="Label" parent="EndingOverlay/EndingCenter/EndingPanel/EndingMargin/EndingLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.63, 0.48, 1)
+theme_override_font_sizes/font_size = 19
+horizontal_alignment = 1
+
+[node name="EndingSaveLabel" type="Label" parent="EndingOverlay/EndingCenter/EndingPanel/EndingMargin/EndingLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 1

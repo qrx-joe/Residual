@@ -4,6 +4,7 @@
     {
       "id": "INSPECT_PHOTO",
       "region": "PHONE",
+      "max_loop": 2,
       "display_name": "检查合照",
       "description": "三个人站在 SAVE_03 原型机前。阿栀所在的位置被撕掉了一角。照片背后写着：03 / 17。",
       "cost": 1,
@@ -17,6 +18,7 @@
     {
       "id": "PLAY_AUDIO",
       "region": "PHONE",
+      "max_loop": 2,
       "display_name": "播放阿栀录音",
       "description": "“他们没有删除任何东西。只是让我们看不见。” 后半段损坏，但声纹仍可读取。",
       "cost": 1,
@@ -33,6 +35,7 @@
     {
       "id": "SCAN_COMPUTER",
       "region": "COMPUTER",
+      "max_loop": 2,
       "display_name": "扫描电脑与 SAVE_03",
       "description": "EVIDENCE_03.enc 需要 2.4 GB，当前仅 0.6 GB。删除本地语音缓存后才能解压。",
       "cost": 1,
@@ -46,6 +49,7 @@
     {
       "id": "READ_LETTER",
       "region": "DRAWER",
+      "max_loop": 2,
       "display_name": "阅读未寄出的信",
       "description": "信中写着清除行动与抽屉提示。合照背面的 03 / 17 正是抽屉密码。",
       "cost": 1,
@@ -59,6 +63,7 @@
     {
       "id": "OPEN_DRAWER",
       "region": "DRAWER",
+      "max_loop": 2,
       "display_name": "打开抽屉",
       "description": "03 / 17。锁打开了。里面是一枚脱离网络的物理备份芯片。",
       "cost": 1,
@@ -106,6 +111,83 @@
         {"target": "world_state", "operation": "SET", "key": "first_loop_choice", "value": "KEEP"}
       ],
       "tags": ["decision", "PRESERVE_AZHI_AUDIO"]
+    },
+    {
+      "id": "QUICK_OPEN_DRAWER",
+      "region": "DRAWER",
+      "min_loop": 3,
+      "display_name": "用 03 / 17 打开抽屉",
+      "description": "你已经知道密码。抽屉里是阿栀留下的离线物理备份芯片。",
+      "cost": 1,
+      "prerequisites": [
+        {"state": "player_knowledge", "key": "photo_code_hint", "equals": "03/17"}
+      ],
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "physical_chip_acquired", "value": true}
+      ],
+      "tags": ["quick", "backup", "GET_PHYSICAL_CHIP"]
+    },
+    {
+      "id": "QUICK_FIND_EVIDENCE",
+      "region": "COMPUTER",
+      "min_loop": 3,
+      "display_name": "直接定位证据包",
+      "description": "你记得 EVIDENCE_03.enc 的路径。证据包已进入离线解压区。",
+      "cost": 1,
+      "prerequisites": [
+        {"state": "player_knowledge", "key": "evidence_path_known", "equals": true}
+      ],
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "evidence_extracted", "value": true}
+      ],
+      "tags": ["quick", "terminal", "FIND_EVIDENCE"]
+    },
+    {
+      "id": "USE_GHOST_AUDIO",
+      "region": "PHONE",
+      "min_loop": 3,
+      "display_name": "使用幽灵声纹",
+      "description": "SAVE_03 保留的完整幽灵录音提供了阿栀声纹，不占用正式录音状态。",
+      "cost": 0,
+      "prerequisites": [
+        {"state": "residual_state", "key": "complete_ghost_recording", "equals": true}
+      ],
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "final_soundprint_available", "value": true}
+      ],
+      "tags": ["quick", "residual", "USE_GHOST_AUDIO"]
+    },
+    {
+      "id": "USE_PRESERVED_AUDIO",
+      "region": "PHONE",
+      "min_loop": 3,
+      "display_name": "使用保留声纹",
+      "description": "你保留了阿栀的录音。当前声纹可用于最终验证。",
+      "cost": 0,
+      "prerequisites": [
+        {"state": "player_knowledge", "key": "preserved_recording_once", "equals": true}
+      ],
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "final_soundprint_available", "value": true}
+      ],
+      "tags": ["quick", "audio", "USE_PRESERVED_AUDIO"]
+    },
+    {
+      "id": "DECRYPT_EVIDENCE",
+      "region": "COMPUTER",
+      "min_loop": 3,
+      "display_name": "验证并解密证据",
+      "description": "声纹、物理芯片和证据包校验一致。最终证据已解密。",
+      "cost": 1,
+      "prerequisites": [
+        {"state": "world_state", "key": "evidence_extracted", "equals": true},
+        {"state": "world_state", "key": "physical_chip_acquired", "equals": true},
+        {"state": "world_state", "key": "final_soundprint_available", "equals": true}
+      ],
+      "effects": [
+        {"target": "world_state", "operation": "SET", "key": "final_evidence_decrypted", "value": true}
+      ],
+      "tags": ["final", "evidence", "DECRYPT_EVIDENCE"]
     }
   ]
 }

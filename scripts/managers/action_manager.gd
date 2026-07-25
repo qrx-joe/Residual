@@ -81,6 +81,11 @@ func get_available_action_for_region(region_id: StringName) -> Dictionary:
 		var action: Dictionary = actions_by_id[action_id]
 		if StringName(String(action.get("region", ""))) != region_id:
 			continue
+		var loop_index: int = int(game_state.get("loop_index"))
+		if loop_index < int(action.get("min_loop", 1)):
+			continue
+		if loop_index > int(action.get("max_loop", 999)):
+			continue
 		if bool(completed_actions.get(action_id, false)):
 			continue
 		if _check_prerequisites(action["prerequisites"] as Array).is_empty():

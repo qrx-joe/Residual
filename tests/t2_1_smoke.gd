@@ -16,8 +16,8 @@ func _run() -> void:
 	var action_manager: Node = ACTION_MANAGER_SCRIPT.new()
 	root.add_child(action_manager)
 
-	if (action_manager.get("actions_by_id") as Dictionary).size() != 7:
-		_fail("actions.json did not load all seven actions")
+	if (action_manager.get("actions_by_id") as Dictionary).size() != 12:
+		_fail("actions.json did not load all twelve actions")
 		return
 	var phone: Dictionary = action_manager.call(
 		&"get_action",

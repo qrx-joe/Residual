@@ -499,3 +499,55 @@
 - 承诺保存在 `persona_state.promises`，谈判选择保存在 `player_knowledge`
 - 实机验收暴露并修复了仅同进程读档无法发现的第二轮重启初始化缺口
 - 两个 GUI 隔离种子存档已删除，默认正式存档未触碰
+
+## 2026-07-25 16:20 - T2.5
+
+### Question
+
+如何让第三轮稳定组合声纹、物理芯片和证据包，并在完全不依赖 AI 的前提下到达两个结局和三种关系微变体？
+
+### To do
+
+- 实现第三轮快捷证据行动与三件套校验
+- 实现固定最终揭示和阿栀留言
+- 实现公开真相与保留记忆两个本地结局
+- 实现合作型、交易型、对抗型关系微变体
+- 验证正式文本预算与两条结局可达性
+
+### Next to do
+
+- T3.1：创建 Fastify + Zod 后端骨架、健康检查和本地决策接口
+
+### Changes
+
+- 扩展 `data/actions.json`，增加第三轮声纹、芯片、证据包和解密行动
+- 扩展 `scripts/managers/action_manager.gd`，支持行动轮次范围
+- 创建 `scripts/managers/third_loop_content_manager.gd`
+- 创建 `scripts/managers/ending_manager.gd`
+- 更新 `scripts/main.gd`，接入零成本行动、最终揭示和双结局
+- 更新 `scenes/main.tscn`，增加最终揭示与结局覆盖层
+- 创建 `tests/t2_5_smoke.gd`
+- 更新 `tests/t2_1_smoke.gd`，同步十二个数据驱动行动
+
+### Verification
+
+- T2.5 smoke：声纹、芯片和证据包齐备后才能解密最终证据
+- T2.5 smoke：固定揭示包含保留策略、授权、覆盖对象和 02:31 离开记录
+- T2.5 smoke：合作型、交易型、对抗型关系均可稳定分类
+- T2.5 smoke：公开真相清空 SAVE_03 人格与残留，存档槽为空
+- T2.5 smoke：保留记忆仅保留证据摘要，SAVE_03 存续，存档名变为“我们都记得”
+- T1.1–T2.5 共十个 smoke 全量回归通过
+- Godot 主场景 headless 加载通过
+- Godot GUI：完整点击幽灵声纹、物理芯片、证据包和解密
+- Godot GUI：公开真相与保留记忆两个结局均实际到达
+- 截图：
+  - `docs/evidence/T2.5/final-reveal-cooperative.png`
+  - `docs/evidence/T2.5/public-truth-ending.png`
+  - `docs/evidence/T2.5/preserve-memory-ending.png`
+
+### Advice
+
+- 最终揭示、结局条件和代价全部由本地规则决定，RouterBase 无权修改
+- 第三轮声纹同时支持完整幽灵录音和被保留的正式录音，两条前序路径均可继续
+- 关系条件之外的中间状态回落为交易型，避免出现第四种关系或死路
+- GUI 验收使用的隔离种子存档已删除，默认正式存档未触碰
