@@ -9,6 +9,7 @@ build/
 # Node.js
 node_modules/
 coverage/
+dist/
 
 # Secrets
 .env

@@ -551,3 +551,53 @@
 - 第三轮声纹同时支持完整幽灵录音和被保留的正式录音，两条前序路径均可继续
 - 关系条件之外的中间状态回落为交易型，避免出现第四种关系或死路
 - GUI 验收使用的隔离种子存档已删除，默认正式存档未触碰
+
+## 2026-07-25 16:40 - T3.1
+
+### Question
+
+如何建立不泄漏 Token、无网络也能响应、并能拒绝非法 AI 请求的后端安全边界？
+
+### To do
+
+- 创建 Fastify + TypeScript + Zod 后端
+- 实现 `GET /health`
+- 实现 `POST /v1/save-decision`
+- 用 Zod 校验请求白名单和文本预算
+- 提供空凭据 `.env.example`
+- 验证无 Token 启动和非法请求 400
+
+### Next to do
+
+- T3.2：实现 RouterBase 适配器、严格 JSON、5 秒超时、一次重试和 fallback
+
+### Changes
+
+- 创建 `backend/package.json` 与锁文件，锁定 Node 24 对应依赖
+- 创建 `backend/tsconfig.json` 与生产构建配置
+- 创建 `backend/src/contracts.ts`
+- 创建 `backend/src/fallback.ts`
+- 创建 `backend/src/app.ts`
+- 创建 `backend/src/config.ts`
+- 创建 `backend/src/server.ts`
+- 创建 `backend/tests/app.test.ts`
+- 创建 `backend/.env.example` 与 `backend/README.md`
+- 更新 `.gitignore`，忽略构建产物
+
+### Verification
+
+- `npm run typecheck`：TypeScript 严格检查通过
+- `npm run build`：生产代码构建通过
+- `npm test`：1 个测试文件、4 个用例全部通过
+- `/health` 真实 HTTP 返回 200，且无适配器时 `ai_available: false`
+- `/v1/save-decision` 合法请求返回白名单内本地 fallback
+- 缺失字段请求真实 HTTP 返回 400
+- `netstat` 确认服务监听 `127.0.0.1:8787`
+- 验收后服务进程已关闭，端口不再监听
+
+### Advice
+
+- T3.1 没有调用 RouterBase，避免把后端骨架伪装成 AI 已接入
+- Fastify 请求体限制为 32 KiB，生产日志对认证头和 Cookie 做脱敏
+- `.env.example` 只包含空的 `ROUTERBASE_API_KEY` 占位符，真实 `.env` 继续被忽略
+- 本地 fallback 只从请求提供的决策和目标白名单中取值，核心流程仍可离线运行
