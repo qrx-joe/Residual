@@ -10,6 +10,7 @@ extends Control
 @onready var load_button: Button = %LoadButton
 @onready var delete_recording_button: Button = %DeleteRecordingButton
 @onready var ghost_waveform_label: Label = %GhostWaveformLabel
+@onready var ghost_evidence_header_label: Label = %GhostEvidenceHeaderLabel
 @onready var force_overwrite_button: Button = %ForceOverwriteButton
 @onready var overwrite_overlay: Control = %OverwriteOverlay
 @onready var overwrite_progress: ProgressBar = %OverwriteProgress
@@ -21,11 +22,18 @@ extends Control
 @onready var first_loop_decision_overlay: Control = %FirstLoopDecisionOverlay
 @onready var delete_audio_choice_button: Button = %DeleteAudioChoiceButton
 @onready var keep_audio_choice_button: Button = %KeepAudioChoiceButton
+@onready var decision_title: Label = %DecisionTitle
+@onready var decision_detail: Label = %DecisionDetail
+@onready var negotiation_entry_overlay: Control = %NegotiationEntryOverlay
+@onready var negotiation_title_label: Label = %NegotiationTitleLabel
+@onready var negotiation_detail_label: Label = %NegotiationDetailLabel
+@onready var enter_negotiation_button: Button = %EnterNegotiationButton
 @onready var loop_manager: Node = %LoopManager
 @onready var residual_data_manager: Node = %ResidualDataManager
 @onready var anomaly_controller: Node = %AnomalyController
 @onready var action_manager: Node = %ActionManager
 @onready var first_loop_content_manager: Node = %FirstLoopContentManager
+@onready var second_loop_content_manager: Node = %SecondLoopContentManager
 @onready var save_data: Node = get_node("/root/SaveData")
 @onready var investigation_areas: Array[Button] = [
 	%PhoneArea,
@@ -53,6 +61,7 @@ func _ready() -> void:
 	keep_audio_choice_button.pressed.connect(
 		_on_first_loop_choice.bind(&"KEEP_AUDIO")
 	)
+	enter_negotiation_button.pressed.connect(_on_enter_negotiation_pressed)
 	anomaly_controller.connect(&"progress_changed", _on_overwrite_progress_changed)
 	anomaly_controller.connect(&"stage_changed", _on_overwrite_stage_changed)
 	anomaly_controller.connect(&"overwrite_completed", _on_overwrite_completed)
@@ -189,6 +198,7 @@ func _on_load_pressed() -> void:
 	detail_label.text = "世界状态已恢复；已获得的知识与 SAVE_03 人格不会回滚。"
 	delete_recording_button.visible = false
 	first_loop_decision_overlay.visible = false
+	negotiation_entry_overlay.visible = false
 	pending_first_loop_failure.clear()
 	crisis_label.visible = false
 	_refresh_residual_presentation()
@@ -215,15 +225,35 @@ func _update_delete_recording_action(region_id: StringName) -> void:
 
 func _maybe_offer_first_loop_choice() -> void:
 	var game_state: Node = get_node("/root/GameState")
-	if not bool(
+	var loop_index: int = int(game_state.get("loop_index"))
+	var first_loop_choice_ready: bool = bool(
 		first_loop_content_manager.call(
 			&"should_offer_choice",
-			int(game_state.get("loop_index"))
+			loop_index
 		)
-	):
+	)
+	var second_loop_choice_ready: bool = bool(
+		second_loop_content_manager.call(
+			&"should_offer_choice",
+			loop_index
+		)
+	)
+	if not first_loop_choice_ready and not second_loop_choice_ready:
 		return
 	_set_interaction_enabled(false)
 	first_loop_decision_overlay.visible = true
+	if loop_index == 2:
+		decision_title.text = "SAVE_03 已记录上一次选择"
+		decision_detail.text = (
+			"同一份证据，同一段声音。\n"
+			+ "这次操作将决定 SAVE_03 是否开启谈判。"
+		)
+	else:
+		decision_title.text = "空间冲突 · 此操作无法撤销"
+		decision_detail.text = (
+			"EVIDENCE_03.enc 需要 2.4 GB，当前仅 0.6 GB。\n"
+			+ "删除阿栀的语音缓存才能解压证据。"
+		)
 	delete_audio_choice_button.disabled = false
 	keep_audio_choice_button.disabled = false
 
@@ -234,8 +264,10 @@ func _on_first_loop_choice(choice_id: StringName) -> void:
 	delete_audio_choice_button.disabled = true
 	keep_audio_choice_button.disabled = true
 
+	var game_state: Node = get_node("/root/GameState")
+	var loop_index: int = int(game_state.get("loop_index"))
 	var action: Dictionary = action_manager.call(&"get_action", choice_id)
-	var cost: int = int(action.get("cost", 0))
+	var cost: int = int(action.get("cost", 0)) if loop_index == 1 else 0
 	if cost > 0 and not bool(loop_manager.call(&"request_action", choice_id)):
 		return
 	var action_result: Dictionary = action_manager.call(
@@ -250,19 +282,51 @@ func _on_first_loop_choice(choice_id: StringName) -> void:
 		keep_audio_choice_button.disabled = false
 		return
 
+	first_loop_decision_overlay.visible = false
+	if loop_index == 2:
+		var second_result: Dictionary = second_loop_content_manager.call(
+			&"complete_choice",
+			choice_id,
+			residual_data_manager
+		)
+		if not bool(second_result.get("ok", false)):
+			detail_label.text = String(
+				second_result.get("error", "SECOND_LOOP_CHOICE_ERROR")
+			)
+			_set_interaction_enabled(true)
+			return
+		negotiation_title_label.text = String(second_result.get("title", ""))
+		negotiation_detail_label.text = String(
+			second_result.get("detail", "")
+		)
+		negotiation_entry_overlay.visible = true
+		save_data.call(&"save_persistent_state")
+		_refresh_residual_presentation()
+		return
+
 	pending_first_loop_failure = first_loop_content_manager.call(
 		&"complete_choice",
 		choice_id
 	)
 	if choice_id == &"DELETE_AUDIO":
 		residual_data_manager.call(&"record_recording_deletion")
-		save_data.call(&"save_persistent_state")
-
-	first_loop_decision_overlay.visible = false
+	else:
+		residual_data_manager.call(&"record_recording_preservation")
+	save_data.call(&"save_persistent_state")
 	if cost > 0:
 		loop_manager.call(&"complete_action", choice_id)
 	if not bool(loop_manager.get("timed_out")):
 		loop_manager.call(&"end_loop_early", choice_id)
+
+
+func _on_enter_negotiation_pressed() -> void:
+	if not bool(second_loop_content_manager.call(&"enter_negotiation")):
+		return
+	negotiation_entry_overlay.visible = false
+	selection_label.text = "谈判通道已建立"
+	detail_label.text = "SAVE_03 正在等待你的选择。"
+	loop_status_label.text = "SAVE NEGOTIATION"
+	save_data.call(&"save_persistent_state")
 
 
 func _refresh_residual_presentation() -> void:
@@ -270,7 +334,13 @@ func _refresh_residual_presentation() -> void:
 		residual_data_manager.call(&"has_ghost_recording")
 	)
 	ghost_waveform_label.visible = has_ghost_recording
-	save_status_label.text = "已记录" if has_ghost_recording else "已保存"
+	ghost_evidence_header_label.visible = bool(
+		residual_data_manager.call(&"has_ghost_evidence_header")
+	)
+	var has_visible_residual: bool = (
+		has_ghost_recording or ghost_evidence_header_label.visible
+	)
+	save_status_label.text = "已记录" if has_visible_residual else "已保存"
 	var has_ghost_save: bool = bool(
 		anomaly_controller.call(&"has_completed_overwrite")
 	)

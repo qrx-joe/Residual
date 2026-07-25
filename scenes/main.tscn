@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/investigation_area.gd" id="2_area"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/managers/anomaly_controller.gd" id="5_anomaly"]
 [ext_resource type="Script" path="res://scripts/managers/action_manager.gd" id="6_action"]
 [ext_resource type="Script" path="res://scripts/managers/first_loop_content_manager.gd" id="7_first_loop"]
+[ext_resource type="Script" path="res://scripts/managers/second_loop_content_manager.gd" id="8_second_loop"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
 bg_color = Color(0.105, 0.133, 0.192, 0.96)
@@ -108,6 +109,10 @@ script = ExtResource("6_action")
 [node name="FirstLoopContentManager" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("7_first_loop")
+
+[node name="SecondLoopContentManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("8_second_loop")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -340,6 +345,14 @@ theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
 theme_override_font_sizes/font_size = 15
 text = "GHOST WAVEFORM  ▁▃▆▂▅▇▃···  +3s"
 
+[node name="GhostEvidenceHeaderLabel" type="Label" parent="SafeArea/MainLayout/FeedbackPanel/FeedbackMargin/Feedback"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.63, 0.48, 1)
+theme_override_font_sizes/font_size = 14
+text = "GHOST HEADER  EVIDENCE_03.enc  0x03···AZHI"
+
 [node name="SavePanel" type="PanelContainer" parent="SafeArea/MainLayout"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
@@ -523,6 +536,7 @@ layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="DecisionTitle" type="Label" parent="FirstLoopDecisionOverlay/DecisionCenter/DecisionPanel/DecisionMargin/DecisionLayout"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.36, 0.36, 1)
 theme_override_font_sizes/font_size = 22
@@ -530,6 +544,7 @@ text = "空间冲突 · 此操作无法撤销"
 horizontal_alignment = 1
 
 [node name="DecisionDetail" type="Label" parent="FirstLoopDecisionOverlay/DecisionCenter/DecisionPanel/DecisionMargin/DecisionLayout"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
 theme_override_font_sizes/font_size = 16
@@ -552,3 +567,59 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
 text = "保留语音，退出"
+
+[node name="NegotiationEntryOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.025, 0.035, 0.055, 0.94)
+
+[node name="NegotiationCenter" type="CenterContainer" parent="NegotiationEntryOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="NegotiationPanel" type="PanelContainer" parent="NegotiationEntryOverlay/NegotiationCenter"]
+custom_minimum_size = Vector2(660, 280)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="NegotiationMargin" type="MarginContainer" parent="NegotiationEntryOverlay/NegotiationCenter/NegotiationPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="NegotiationLayout" type="VBoxContainer" parent="NegotiationEntryOverlay/NegotiationCenter/NegotiationPanel/NegotiationMargin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="NegotiationTitleLabel" type="Label" parent="NegotiationEntryOverlay/NegotiationCenter/NegotiationPanel/NegotiationMargin/NegotiationLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 22
+horizontal_alignment = 1
+
+[node name="NegotiationDetailLabel" type="Label" parent="NegotiationEntryOverlay/NegotiationCenter/NegotiationPanel/NegotiationMargin/NegotiationLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+
+[node name="EnterNegotiationButton" type="Button" parent="NegotiationEntryOverlay/NegotiationCenter/NegotiationPanel/NegotiationMargin/NegotiationLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "进入谈判"

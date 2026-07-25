@@ -400,3 +400,50 @@
 - 实际理解率与主动读档比例仍需后续真人试玩统计，当前自动化只证明流程与提示成立
 - 旧的即时删除按钮已退出正式第一轮路径，避免绕过互斥选择
 - 本任务仍完全离线，未接入 RouterBase 或 Tripo3D
+
+## 2026-07-25 14:52 - T2.3
+
+### Question
+
+如何让第一轮删除和保留都在第二轮留下可见、可解释的残留，并在第二次选择后稳定进入谈判？
+
+### To do
+
+- 删除路径生成幽灵录音
+- 保留路径生成残缺证据头
+- 第二次删除记录因果与人格变化
+- 第二次保护记录信任变化
+- 两条路径都开放谈判入口
+
+### Next to do
+
+- T2.4：实现坦白、交换、隐瞒、强制覆盖四种谈判选项和承诺记录
+
+### Changes
+
+- 扩展 `scripts/managers/residual_data_manager.gd`
+- 创建 `scripts/managers/second_loop_content_manager.gd`
+- 更新 `scripts/main.gd`，复用取舍界面并接入谈判入口
+- 更新 `scenes/main.tscn`，增加残缺证据头和谈判入口覆盖层
+- 创建 `tests/t2_3_smoke.gd`
+
+### Verification
+
+- T2.3 smoke：第一轮删除保证第二轮幽灵录音
+- T2.3 smoke：第一轮保留保证第二轮残缺证据头
+- T2.3 smoke：第二次删除计数为 2、`obsession +2`、生成完整幽灵录音
+- T2.3 smoke：第二次保护 `trust +1`
+- T2.3 smoke：删除与保留两条路径均可进入谈判
+- T1.1–T2.2 全回归通过
+- Godot GUI：删除路径显示幽灵波形、第二次删除固定台词和“进入谈判”
+- Godot GUI：保留路径显示 `GHOST HEADER EVIDENCE_03.enc` 和“已记录”
+- 截图：
+  - `docs/evidence/T2.3/ghost-recording-loop2.jpg`
+  - `docs/evidence/T2.3/second-delete-negotiation.jpg`
+  - `docs/evidence/T2.3/ghost-evidence-header-loop2.jpg`
+
+### Advice
+
+- 第二轮固定因果仍完全由本地规则决定，不交给 AI
+- T2.3 只实现谈判入口，四种谈判行为留给 T2.4
+- 两个 GUI 隔离存档已删除，默认正式存档未触碰
